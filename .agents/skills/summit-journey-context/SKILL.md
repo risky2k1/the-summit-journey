@@ -15,3 +15,5 @@ Trước khi sửa logic game hoặc schema:
 3. React/Next: skill `vercel-react-best-practices` cho performance; UI không chứa business rules của game.
 
 Khi thêm Prisma: schema khớp `database.md`. Khi thêm `app/api`: khớp `api-spec.md`.
+
+Generative (OpenRouter): `ai-generation.md` + `.cursor/rules/summit-journey-openrouter.mdc` — key chỉ server, code gọi model trong `lib/ai/`.

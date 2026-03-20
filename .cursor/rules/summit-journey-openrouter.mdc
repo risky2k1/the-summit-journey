@@ -1,0 +1,12 @@
+---
+description: OpenRouter — generative AI chỉ trên server, env OPEN_ROUTER_*
+globs: lib/ai/**/*.ts
+alwaysApply: false
+---
+
+# OpenRouter (AI generative)
+
+- Chi tiết: `.cursor/docs/ai-generation.md` (mục OpenRouter).
+- **`OPEN_ROUTER_API_KEY`** chỉ dùng trong code **server** (`lib/ai/*`, Route Handler gọi helper). Không `NEXT_PUBLIC_*`, không gửi key xuống trình duyệt.
+- **`OPEN_ROUTER_API_URL`** + **`OPEN_ROUTER_DEFAULT_MODEL`**: đọc từ `process.env`; có default URL trong doc nếu thiếu.
+- Route public (ví dụ `app/api/**/ai/**`) chỉ orchestrate + validate; gọi client OpenRouter qua module trong `lib/ai/`.
