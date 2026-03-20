@@ -25,9 +25,24 @@ export function PlaySetup() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name }),
       });
-      const data = (await res.json()) as StartResponse & { error?: string };
+      const raw = await res.text();
+      let data: (StartResponse & { error?: string }) | null = null;
+      try {
+        data = raw ? (JSON.parse(raw) as StartResponse & { error?: string }) : null;
+      } catch {
+        setError(
+          res.ok
+            ? "Phản hồi không hợp lệ từ máy chủ."
+            : `Lỗi ${res.status}: ${raw.slice(0, 200) || res.statusText}`,
+        );
+        return;
+      }
       if (!res.ok) {
-        setError(data.error ?? "Không thể tạo nhân vật.");
+        setError(data?.error ?? "Không thể tạo nhân vật.");
+        return;
+      }
+      if (!data?.run_id || !data.stats) {
+        setError("Phản hồi thiếu dữ liệu.");
         return;
       }
       setResult({
@@ -35,8 +50,9 @@ export function PlaySetup() {
         player_name: data.player_name,
         stats: data.stats,
       });
-    } catch {
-      setError("Lỗi mạng. Thử lại sau.");
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : "Lỗi không xác định";
+      setError(`Lỗi mạng: ${msg}`);
     } finally {
       setLoading(false);
     }

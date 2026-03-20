@@ -55,7 +55,8 @@
 
 - Schema: `prisma/schema.prisma` — enum `EventType`, `PlayerStat`; bảng map snake_case như memo.
 - Config Prisma 7: `prisma.config.ts` — URL cho **migrate/introspect** lấy `DIRECT_URL` (nếu có), không thì `DATABASE_URL`.
-- **Supabase:** Pooler `:6543` (PgBouncer) thường làm `prisma migrate` **treo** hoặc lỗi. Đặt `DIRECT_URL` trùng **connection non-pooling** (port **5432**, ví dụ `POSTGRES_URL_NON_POOLING` trong dashboard). App/runtime vẫn dùng `DATABASE_URL` pooler trong `lib/db.ts`.
+- **Supabase:** Pooler `:6543` (PgBouncer) thường làm `prisma migrate` **treo** hoặc lỗi. Đặt `DIRECT_URL` trùng **connection non-pooling** (port **5432**, ví dụ `POSTGRES_URL_NON_POOLING` trong dashboard). Runtime Prisma dùng `DIRECT_URL` (fallback `DATABASE_URL`) trong `lib/db.ts` + `lib/postgres-url.ts` (`sslmode=no-verify` khi cần).
+- **TLS / dev:** Nếu gặp `self-signed certificate in certificate chain` khi gọi API, `instrumentation.ts` bật `NODE_TLS_REJECT_UNAUTHORIZED=0` **chỉ khi `NODE_ENV=development`**. Production nên dùng CA đúng hoặc cấu hình SSL phù hợp.
 - Migration khởi tạo: `prisma/migrations/20260320120000_init/`.
 - Áp dụng DB: `pnpm db:migrate` (dev) hoặc `pnpm db:migrate:deploy` (CI/prod). Có thể áp DDL qua Supabase MCP `apply_migration` rồi `prisma migrate resolve --applied <tên_thư_mục>`.
 - Client: `pnpm db:generate` → import từ `@/generated/prisma/client` (singleton gợi ý: `lib/db.ts` dùng `@prisma/adapter-pg` + `DATABASE_URL`).

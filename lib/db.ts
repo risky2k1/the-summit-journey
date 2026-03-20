@@ -1,10 +1,18 @@
+import "@/lib/prisma-env";
 import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient } from "@/generated/prisma/client";
+import { postgresUrlWithDevTls } from "@/lib/postgres-url";
 
-const connectionString = process.env.DATABASE_URL;
+/**
+ * Supabase pooler (:6543) hay lỗi; ưu tiên `DIRECT_URL` (:5432).
+ * URL qua `postgresUrlWithDevTls` (sslmode=no-verify); engine TLS dev: `instrumentation.ts`.
+ */
+const connectionString = postgresUrlWithDevTls(
+  process.env.DIRECT_URL ?? process.env.DATABASE_URL,
+);
 
 if (!connectionString) {
-  throw new Error("DATABASE_URL is not set");
+  throw new Error("Set DIRECT_URL or DATABASE_URL for Prisma");
 }
 
 const adapter = new PrismaPg({ connectionString });
