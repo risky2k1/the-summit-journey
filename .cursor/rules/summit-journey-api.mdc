@@ -1,0 +1,15 @@
+---
+description: API routes — khớp api-spec.md, shape JSON response/request
+globs: app/api/**/*.ts
+alwaysApply: false
+---
+
+# API — The Summit Journey
+
+- Contract tham chiếu: `.cursor/docs/api-spec.md`.
+- `POST /api/run/start` — tạo run, trả `run_id` + `event`.
+- `POST /api/run/choice` — body `run_id`, `choice_id`; trả `event`, `stats`.
+- `GET /api/event/:id` — event kèm choices.
+- `POST /api/ai/generate-event` — body `player_state`, `tags`; trả event JSON đúng schema dự án.
+
+Khi đổi route hoặc payload, **cập nhật `api-spec.md`** (hoặc ghi rõ lý do trong commit) để agent và người không lệch nhau.

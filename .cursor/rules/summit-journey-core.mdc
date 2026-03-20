@@ -1,0 +1,26 @@
+---
+description: Game tu tiên — nguồn spec, ranh giới UI/server, không hardcode story
+alwaysApply: true
+---
+
+# The Summit Journey — core
+
+## Nguồn sự thật (design)
+
+- Đọc `.cursor/docs/` trước khi đổi hành vi game: `overview.md`, `rules.md`, `game-engine.md`, `event-schema.md`, `database.md`, `api-spec.md`, `ai-generation.md`, `roadmap.md`.
+- Index nhanh: `.cursor/docs/README.md`.
+
+## Kiến trúc
+
+- **Không** nhét nội dung story (event/choice/branch) vào component hay file tùy ý. Nội dung từ **DB** (seed/migration) hoặc **AI** (có validate).
+- Logic nghiệp vụ — điều kiện, effect, `handleChoice` / chọn event tiếp theo — chỉ ở **server** (Route Handlers, Server Actions, `lib/`/`server/`), không ở client.
+- UI chỉ gọi API / server actions; không duplicate engine.
+
+## Dữ liệu game
+
+- Chỉ các stat `tu_vi`, `karma`, `luck` (trừ khi docs được cập nhật có chủ đích).
+- Event do AI phải khớp `event-schema.md` và quy trình `ai-generation.md`.
+
+## Stack (memo)
+
+- Next.js App Router, PostgreSQL, Prisma; DB có thể host qua Supabase — khi lệch memo và code, ưu tiên **cập nhật memo** hoặc ghi chú trong PR.

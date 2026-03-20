@@ -1,0 +1,11 @@
+---
+description: Prisma/schema — khớp database.md (bảng, JSONB stats)
+globs: prisma/**/*.prisma
+alwaysApply: false
+---
+
+# Database — The Summit Journey
+
+- Thiết kế bảng và quan hệ theo `.cursor/docs/database.md`.
+- `player_runs.stats` dạng JSONB; không hardcode flow trong code — dùng tag + condition như memo.
+- Khi thêm/mở rộng bảng, cập nhật `database.md` nếu đó vẫn là spec chính thức.
