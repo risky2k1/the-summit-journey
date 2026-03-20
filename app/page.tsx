@@ -28,7 +28,7 @@ export default function Home() {
           <ul className="flex flex-col gap-3">
             <li>
               <Link
-                href="/play"
+                href="/dashboard"
                 className="flex w-full items-center justify-center rounded-lg border border-amber-900/25 bg-amber-950/[0.06] px-6 py-3.5 text-base font-medium text-zinc-900 shadow-sm transition-[background-color,box-shadow,transform] hover:bg-amber-950/10 hover:shadow-md active:scale-[0.99] dark:border-amber-200/15 dark:bg-amber-100/[0.06] dark:text-zinc-100 dark:hover:bg-amber-100/10"
               >
                 Bắt đầu

@@ -2,7 +2,7 @@
 
 ## POST /api/run/start
 
-Tạo run mới (đặt tên → random stats → lưu DB).
+Tạo run mới (đặt tên → random stats → lưu DB). **Yêu cầu session Supabase** (cookie).
 
 Body:
 {

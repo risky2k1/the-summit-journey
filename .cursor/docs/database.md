@@ -36,6 +36,7 @@
 
 ### player_runs
 - id
+- user_id (UUID, Supabase `auth.users.id`; run sau khi đăng nhập)
 - player_name (tên nhân vật, MVP)
 - current_event_id
 - stats (JSONB) — `tu_vi`, `karma`, `luck`

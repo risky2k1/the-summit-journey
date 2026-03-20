@@ -91,6 +91,8 @@ model EventTag {
 
 model PlayerRun {
   id             Int     @id @default(autoincrement())
+  /// Supabase Auth `auth.users.id`
+  userId         String? @map("user_id") @db.Uuid
   playerName     String  @map("player_name") @db.VarChar(64)
   currentEventId Int?    @map("current_event_id")
   stats          Json    @default("{}")
@@ -99,6 +101,7 @@ model PlayerRun {
   currentEvent Event?       @relation("CurrentEvent", fields: [currentEventId], references: [id], onDelete: SetNull)
   history      RunHistory[]
 
+  @@index([userId])
   @@map("player_runs")
 }
 

@@ -37,6 +37,10 @@ export function PlaySetup() {
         );
         return;
       }
+      if (res.status === 401) {
+        window.location.href = `/auth/login?next=${encodeURIComponent("/play")}`;
+        return;
+      }
       if (!res.ok) {
         setError(data?.error ?? "Không thể tạo nhân vật.");
         return;
@@ -112,12 +116,20 @@ export function PlaySetup() {
             Hành trình bắt đầu
           </p>
 
-          <Link
-            href="/"
-            className="mt-8 block text-center text-sm font-medium text-amber-800 underline-offset-4 hover:underline dark:text-amber-200/90"
-          >
-            ← Về trang chủ
-          </Link>
+          <div className="mt-8 flex flex-col gap-3">
+            <Link
+              href="/dashboard"
+              className="block text-center text-sm font-medium text-amber-800 underline-offset-4 hover:underline dark:text-amber-200/90"
+            >
+              Về tiến trình →
+            </Link>
+            <Link
+              href="/"
+              className="block text-center text-sm text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300"
+            >
+              ← Trang chủ
+            </Link>
+          </div>
         </div>
       </div>
     );
@@ -174,12 +186,17 @@ export function PlaySetup() {
           </button>
         </form>
 
-        <Link
-          href="/"
-          className="mt-10 block text-center text-sm font-medium text-amber-800 underline-offset-4 hover:underline dark:text-amber-200/90"
-        >
-          ← Về trang chủ
-        </Link>
+        <div className="mt-10 flex flex-col gap-2 text-center text-sm">
+          <Link
+            href="/dashboard"
+            className="font-medium text-amber-800 underline-offset-4 hover:underline dark:text-amber-200/90"
+          >
+            Tiến trình của ngươi
+          </Link>
+          <Link href="/" className="text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300">
+            ← Trang chủ
+          </Link>
+        </div>
       </div>
     </div>
   );
