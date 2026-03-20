@@ -1,5 +1,5 @@
 // Summit Journey — khớp `.cursor/docs/database.md`
-// Prisma 7: URL DB nằm trong `prisma.config.ts` (env `DATABASE_URL`).
+// Connection URL cho engine migrate nằm trong `prisma.config.ts` (ưu tiên `DIRECT_URL`).
 
 generator client {
   provider = "prisma-client"
