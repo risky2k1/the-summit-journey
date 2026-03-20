@@ -91,6 +91,7 @@ model EventTag {
 
 model PlayerRun {
   id             Int     @id @default(autoincrement())
+  playerName     String  @map("player_name") @db.VarChar(64)
   currentEventId Int?    @map("current_event_id")
   stats          Json    @default("{}")
   seed           String  @db.Text

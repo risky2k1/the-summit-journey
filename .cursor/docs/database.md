@@ -36,8 +36,9 @@
 
 ### player_runs
 - id
+- player_name (tên nhân vật, MVP)
 - current_event_id
-- stats (JSONB)
+- stats (JSONB) — `tu_vi`, `karma`, `luck`
 - seed
 
 ### run_history

@@ -2,11 +2,18 @@
 
 ## POST /api/run/start
 
-Tạo run mới
+Tạo run mới (đặt tên → random stats → lưu DB).
+
+Body:
+{
+  "name": "string"
+}
 
 Response:
 {
   "run_id": number,
+  "player_name": "string",
+  "stats": { "tu_vi": number, "karma": number, "luck": number },
   "event": {}
 }
 
