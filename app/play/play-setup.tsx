@@ -49,42 +49,56 @@ export function PlaySetup() {
           aria-hidden
           className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_80%_50%_at_50%_-20%,rgba(120,100,80,0.14),transparent)] dark:bg-[radial-gradient(ellipse_80%_50%_at_50%_-20%,rgba(180,160,120,0.1),transparent)]"
         />
-        <div className="relative z-10 w-full max-w-md text-center">
-          <p className="text-xs font-medium uppercase tracking-[0.3em] text-zinc-500 dark:text-zinc-400">
-            Run #{result.run_id}
-          </p>
-          <h2 className="mt-4 font-serif text-2xl font-semibold text-zinc-900 dark:text-zinc-50">
-            Hành trình bắt đầu
+        <div className="relative z-10 w-full max-w-md">
+          <h2 className="text-center font-serif text-2xl font-semibold leading-snug text-zinc-900 dark:text-zinc-50">
+            Nhân vật của bạn đã được tạo
           </h2>
-          <p className="mt-2 text-lg text-amber-900/90 dark:text-amber-200/90">
-            {result.player_name}
+          <p className="mt-3 text-center text-sm leading-relaxed text-zinc-600 dark:text-zinc-400">
+            Thiên cơ đã định — căn cốt như sau. Hành trình sẽ tùy vào từng lựa chọn của
+            ngươi.
           </p>
-          <dl className="mt-10 space-y-3 rounded-lg border border-amber-900/20 bg-amber-950/[0.04] px-6 py-5 text-left text-sm dark:border-amber-200/15 dark:bg-amber-100/[0.04]">
-            <div className="flex justify-between gap-4">
-              <dt className="text-zinc-500 dark:text-zinc-400">Tu vi</dt>
-              <dd className="font-medium tabular-nums text-zinc-900 dark:text-zinc-100">
-                {result.stats.tu_vi}
-              </dd>
+
+          <div className="mt-8 rounded-xl border border-amber-900/25 bg-amber-950/[0.05] px-5 py-6 dark:border-amber-200/15 dark:bg-amber-100/[0.05]">
+            <div className="border-b border-amber-900/15 pb-4 text-center dark:border-amber-200/10">
+              <p className="text-lg font-medium text-amber-950 dark:text-amber-100">
+                {result.player_name}
+              </p>
+              <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
+                Hồ sơ tu hành · Run #{result.run_id}
+              </p>
             </div>
-            <div className="flex justify-between gap-4">
-              <dt className="text-zinc-500 dark:text-zinc-400">Karma</dt>
-              <dd className="font-medium tabular-nums text-zinc-900 dark:text-zinc-100">
-                {result.stats.karma}
-              </dd>
-            </div>
-            <div className="flex justify-between gap-4">
-              <dt className="text-zinc-500 dark:text-zinc-400">Luck</dt>
-              <dd className="font-medium tabular-nums text-zinc-900 dark:text-zinc-100">
-                {result.stats.luck}
-              </dd>
-            </div>
-          </dl>
-          <p className="mt-8 text-sm text-zinc-600 dark:text-zinc-400">
-            Số phận đã gieo — đường tuỳ ngươi bước tiếp.
+            <p className="mt-4 text-center text-xs font-medium uppercase tracking-[0.2em] text-zinc-500 dark:text-zinc-400">
+              Thông số
+            </p>
+            <dl className="mt-3 space-y-2.5 text-sm">
+              <div className="flex justify-between gap-4 rounded-md bg-white/60 px-3 py-2 dark:bg-zinc-950/40">
+                <dt className="text-zinc-600 dark:text-zinc-400">Tu vi</dt>
+                <dd className="font-semibold tabular-nums text-zinc-900 dark:text-zinc-100">
+                  {result.stats.tu_vi}
+                </dd>
+              </div>
+              <div className="flex justify-between gap-4 rounded-md bg-white/60 px-3 py-2 dark:bg-zinc-950/40">
+                <dt className="text-zinc-600 dark:text-zinc-400">Karma</dt>
+                <dd className="font-semibold tabular-nums text-zinc-900 dark:text-zinc-100">
+                  {result.stats.karma}
+                </dd>
+              </div>
+              <div className="flex justify-between gap-4 rounded-md bg-white/60 px-3 py-2 dark:bg-zinc-950/40">
+                <dt className="text-zinc-600 dark:text-zinc-400">Luck</dt>
+                <dd className="font-semibold tabular-nums text-zinc-900 dark:text-zinc-100">
+                  {result.stats.luck}
+                </dd>
+              </div>
+            </dl>
+          </div>
+
+          <p className="mt-8 text-center text-sm font-medium text-zinc-800 dark:text-zinc-200">
+            Hành trình bắt đầu
           </p>
+
           <Link
             href="/"
-            className="mt-10 inline-block text-sm font-medium text-amber-800 underline-offset-4 hover:underline dark:text-amber-200/90"
+            className="mt-8 block text-center text-sm font-medium text-amber-800 underline-offset-4 hover:underline dark:text-amber-200/90"
           >
             ← Về trang chủ
           </Link>
