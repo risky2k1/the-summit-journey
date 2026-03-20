@@ -1,8 +1,14 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
+import { isSuperAdminUser } from "@/lib/auth/super-admin";
 
 const AUTH_PREFIX = "/auth";
 const PROTECTED = ["/dashboard", "/play"];
+const GAME_ADMIN = "/game-admin";
+
+function isGameAdminPath(pathname: string) {
+  return pathname === GAME_ADMIN || pathname.startsWith(`${GAME_ADMIN}/`);
+}
 
 function isProtectedPath(pathname: string) {
   return PROTECTED.some(
@@ -39,6 +45,21 @@ export async function middleware(request: NextRequest) {
   } = await supabase.auth.getUser();
 
   const { pathname } = request.nextUrl;
+
+  if (isGameAdminPath(pathname)) {
+    if (!user) {
+      const url = request.nextUrl.clone();
+      url.pathname = `${AUTH_PREFIX}/login`;
+      url.searchParams.set("next", pathname);
+      return NextResponse.redirect(url);
+    }
+    if (!isSuperAdminUser(user)) {
+      const url = request.nextUrl.clone();
+      url.pathname = "/dashboard";
+      url.search = "";
+      return NextResponse.redirect(url);
+    }
+  }
 
   if (isProtectedPath(pathname) && !user) {
     const url = request.nextUrl.clone();

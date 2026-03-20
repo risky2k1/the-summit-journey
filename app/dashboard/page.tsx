@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { isSuperAdminUser } from "@/lib/auth/super-admin";
 import { prisma } from "@/lib/db";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import type { PlayerStats } from "@/lib/game/player-stats";
@@ -29,6 +30,8 @@ export default async function DashboardPage() {
     take: 50,
   });
 
+  const showAdmin = isSuperAdminUser(user);
+
   return (
     <div className="relative flex min-h-full flex-1 flex-col overflow-hidden px-6 py-12">
       <div
@@ -46,13 +49,21 @@ export default async function DashboardPage() {
           <SignOutButton />
         </header>
 
-        <div className="mt-8">
+        <div className="mt-8 flex flex-col gap-3">
           <Link
             href="/play"
             className="flex w-full items-center justify-center rounded-lg border border-amber-900/25 bg-amber-950/[0.06] px-4 py-3 text-sm font-medium text-zinc-900 transition hover:bg-amber-950/10 dark:border-amber-200/15 dark:bg-amber-100/[0.06] dark:text-zinc-100"
           >
             Tạo run mới
           </Link>
+          {showAdmin ? (
+            <Link
+              href="/game-admin"
+              className="flex w-full items-center justify-center rounded-lg border border-zinc-300 bg-white px-4 py-3 text-sm font-medium text-zinc-800 transition hover:bg-zinc-50 dark:border-zinc-600 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:bg-zinc-800"
+            >
+              Quản trị game
+            </Link>
+          ) : null}
         </div>
 
         <section className="mt-10">
