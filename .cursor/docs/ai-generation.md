@@ -11,7 +11,8 @@
   "player_state": {
     "tu_vi": number,
     "karma": number,
-    "luck": number
+    "luck": number,
+    "physical": number
   },
   "recent_events": [],
   "tags_needed": [],

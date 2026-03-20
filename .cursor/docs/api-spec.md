@@ -13,7 +13,7 @@ Response:
 {
   "run_id": number,
   "player_name": "string",
-  "stats": { "tu_vi": number, "karma": number, "luck": number },
+  "stats": { "tu_vi": number, "karma": number, "luck": number, "physical": number },
   "event": {}
 }
 

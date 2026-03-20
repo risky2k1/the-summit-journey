@@ -28,6 +28,7 @@
   - tu_vi
   - karma
   - luck
+  - physical
 
 - Value phải nằm trong range:
   - -10 đến +10

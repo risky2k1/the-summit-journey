@@ -18,7 +18,7 @@ alwaysApply: true
 
 ## Dữ liệu game
 
-- Chỉ các stat `tu_vi`, `karma`, `luck` (trừ khi docs được cập nhật có chủ đích).
+- Chỉ các stat `tu_vi`, `karma`, `luck`, `physical` (trừ khi docs được cập nhật có chủ đích).
 - Event do AI phải khớp `event-schema.md` và quy trình `ai-generation.md` (generative qua **OpenRouter** — xem `ai-generation.md` và rule `summit-journey-openrouter.mdc` khi sửa `lib/ai/`).
 
 ## Stack (memo)

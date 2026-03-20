@@ -9,7 +9,8 @@ function statsPreview(stats: unknown): string {
   if (!stats || typeof stats !== "object") return "—";
   const s = stats as PlayerStats;
   if (typeof s.tu_vi !== "number") return "—";
-  return `Tu vi ${s.tu_vi} · Karma ${s.karma} · Luck ${s.luck}`;
+  const ph = typeof s.physical === "number" ? s.physical : "—";
+  return `Tu vi ${s.tu_vi} · Karma ${s.karma} · Luck ${s.luck} · Thể lực ${ph}`;
 }
 
 export default async function DashboardPage() {

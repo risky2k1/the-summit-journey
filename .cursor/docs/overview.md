@@ -12,7 +12,7 @@ Người chơi sẽ đi qua các event và mỗi lựa chọn sẽ ảnh hưởn
 5. Lặp lại
 
 ## Key Features
-- Random stats ban đầu (tu_vi, karma, luck)
+- Random stats ban đầu (tu_vi, karma, luck, physical)
 - Branching story
 - Tag-based event system
 - Có thể mở rộng bằng AI để generate event

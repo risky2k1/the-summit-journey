@@ -6,7 +6,7 @@ import { useState } from "react";
 type StartResponse = {
   run_id: number;
   player_name: string;
-  stats: { tu_vi: number; karma: number; luck: number };
+  stats: { tu_vi: number; karma: number; luck: number; physical: number };
 };
 
 export function PlaySetup() {
@@ -107,6 +107,12 @@ export function PlaySetup() {
                 <dt className="text-zinc-600 dark:text-zinc-400">Luck</dt>
                 <dd className="font-semibold tabular-nums text-zinc-900 dark:text-zinc-100">
                   {result.stats.luck}
+                </dd>
+              </div>
+              <div className="flex justify-between gap-4 rounded-md bg-white/60 px-3 py-2 dark:bg-zinc-950/40">
+                <dt className="text-zinc-600 dark:text-zinc-400">Thể lực</dt>
+                <dd className="font-semibold tabular-nums text-zinc-900 dark:text-zinc-100">
+                  {result.stats.physical}
                 </dd>
               </div>
             </dl>
