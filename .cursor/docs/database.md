@@ -26,7 +26,7 @@
 - id
 - choice_id
 - stat
-- operator (>, <, =)
+- operator (>, <, =) — trong DB: `VARCHAR(2)` (Prisma: `String`), giá trị lưu dạng ký tự so sánh
 - value
 
 ### event_tags
@@ -49,3 +49,11 @@
 ## Notes
 - stats lưu dạng JSONB
 - không hardcode flow → dùng tag + condition
+
+## Prisma & migration
+
+- Schema: `prisma/schema.prisma` — enum `EventType`, `PlayerStat`; bảng map snake_case như memo.
+- Config Prisma 7: `prisma.config.ts` (đọc `DATABASE_URL`).
+- Migration khởi tạo: `prisma/migrations/20260320120000_init/`.
+- Áp dụng DB: `pnpm db:migrate` (dev) hoặc `pnpm db:migrate:deploy` (CI/prod).
+- Client: `pnpm db:generate` → import từ `@/generated/prisma/client` (singleton gợi ý: `lib/db.ts` dùng `@prisma/adapter-pg` + `DATABASE_URL`).
