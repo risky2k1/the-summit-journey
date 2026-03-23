@@ -42,3 +42,4 @@ next-env.d.ts
 
 # Prisma 7 generated client (chạy `pnpm db:generate` sau khi clone)
 /generated/prisma
+.gitnexus
