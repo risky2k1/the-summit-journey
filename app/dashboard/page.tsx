@@ -77,26 +77,35 @@ export default async function DashboardPage() {
           ) : (
             <ul className="mt-4 space-y-3">
               {runs.map((run) => (
-                <li
-                  key={run.id}
-                  className="rounded-lg border border-zinc-200 bg-white/80 px-4 py-3 dark:border-zinc-700 dark:bg-zinc-950/50"
-                >
-                  <div className="flex flex-wrap items-baseline justify-between gap-2">
-                    <span className="font-medium text-zinc-900 dark:text-zinc-100">
-                      {run.playerName}
-                    </span>
-                    <span className="text-xs text-zinc-500">#{run.id}</span>
-                  </div>
-                  <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
-                    {statsPreview(run.stats)}
-                  </p>
-                  {run.currentEventId != null ? (
-                    <p className="mt-1 text-xs text-zinc-500">
-                      Event hiện tại: {run.currentEventId}
+                <li key={run.id}>
+                  <Link
+                    href={`/play/${run.id}`}
+                    className="group block rounded-lg border border-zinc-200 bg-white/80 px-4 py-3 transition hover:border-amber-800/35 hover:bg-amber-950/[0.06] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-700 dark:border-zinc-700 dark:bg-zinc-950/50 dark:hover:border-amber-200/25 dark:hover:bg-amber-100/[0.05]"
+                  >
+                    <div className="flex flex-wrap items-baseline justify-between gap-2">
+                      <span className="font-medium text-zinc-900 dark:text-zinc-100">
+                        {run.playerName}
+                      </span>
+                      <span className="text-xs text-zinc-500">#{run.id}</span>
+                    </div>
+                    <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
+                      {statsPreview(run.stats)}
                     </p>
-                  ) : (
-                    <p className="mt-1 text-xs text-zinc-500">Chưa vào sự kiện</p>
-                  )}
+                    {run.currentEventId != null ? (
+                      <p className="mt-1 text-xs text-zinc-500">
+                        Event hiện tại: {run.currentEventId}
+                      </p>
+                    ) : (
+                      <p className="mt-1 text-xs text-zinc-500">
+                        Đã kết thúc hoặc chưa vào chương
+                      </p>
+                    )}
+                    <p className="mt-2 text-xs font-medium text-amber-800 group-hover:underline dark:text-amber-200/90">
+                      {run.currentEventId != null
+                        ? "Tiếp tục hành trình →"
+                        : "Xem lại / màn kết →"}
+                    </p>
+                  </Link>
                 </li>
               ))}
             </ul>

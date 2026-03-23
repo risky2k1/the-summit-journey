@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { parsePlayerStats } from "@/lib/game/stats-helpers";
+import { getRunHistoryForApi } from "@/lib/game/run-history";
 import { getEventForApi } from "@/lib/game/serialize-event";
 import { prisma } from "@/lib/db";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
@@ -40,12 +41,15 @@ export async function GET(_request: Request, ctx: { params: Promise<{ runId: str
     const event =
       run.currentEventId != null ? await getEventForApi(run.currentEventId) : null;
 
+    const history = await getRunHistoryForApi(runId);
+
     return NextResponse.json({
       run_id: run.id,
       player_name: run.playerName,
       stats,
       current_event_id: run.currentEventId,
       event,
+      history,
     });
   } catch (err) {
     console.error("[GET /api/run/[runId]]", err);

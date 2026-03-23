@@ -5,6 +5,7 @@ import type { PlayerStats } from "@/lib/game/player-stats";
 import { passConditions } from "@/lib/game/stats-helpers";
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
+import { RunJourneyTimeline } from "./run-journey-timeline";
 
 type ApiChoice = {
   id: number;
@@ -22,12 +23,19 @@ type ApiEvent = {
   choices: ApiChoice[];
 };
 
+type HistoryStep = {
+  step: number;
+  event: { id: number; title: string; type: string };
+  choice: { id: number; content: string };
+};
+
 type RunPayload = {
   run_id: number;
   player_name: string;
   stats: PlayerStats;
   current_event_id: number | null;
   event: ApiEvent | null;
+  history?: HistoryStep[];
 };
 
 export function PlayRun({ runId }: { runId: string }) {
@@ -36,9 +44,11 @@ export function PlayRun({ runId }: { runId: string }) {
   const [run, setRun] = useState<RunPayload | null>(null);
   const [choosingId, setChoosingId] = useState<number | null>(null);
 
-  const load = useCallback(async () => {
+  const fetchRun = useCallback(async (opts?: { silent?: boolean }) => {
+    if (!opts?.silent) {
+      setLoading(true);
+    }
     setError(null);
-    setLoading(true);
     try {
       const res = await fetch(`/api/run/${runId}`);
       const raw = await res.text();
@@ -65,13 +75,15 @@ export function PlayRun({ runId }: { runId: string }) {
     } catch (e) {
       setError(e instanceof Error ? e.message : "Lỗi mạng.");
     } finally {
-      setLoading(false);
+      if (!opts?.silent) {
+        setLoading(false);
+      }
     }
   }, [runId]);
 
   useEffect(() => {
-    void load();
-  }, [load]);
+    void fetchRun();
+  }, [fetchRun]);
 
   async function pickChoice(choiceId: number) {
     setChoosingId(choiceId);
@@ -108,13 +120,7 @@ export function PlayRun({ runId }: { runId: string }) {
         return;
       }
       if (data.finished || !data.event) {
-        setRun({
-          run_id: Number(runId),
-          player_name: run?.player_name ?? "",
-          stats: data.stats,
-          current_event_id: null,
-          event: null,
-        });
+        await fetchRun({ silent: true });
         return;
       }
       setRun({
@@ -123,6 +129,7 @@ export function PlayRun({ runId }: { runId: string }) {
         stats: data.stats,
         current_event_id: data.event.id,
         event: data.event,
+        history: run?.history,
       });
     } catch (e) {
       setError(e instanceof Error ? e.message : "Lỗi mạng.");
@@ -162,7 +169,9 @@ export function PlayRun({ runId }: { runId: string }) {
         aria-hidden
         className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_80%_50%_at_50%_-20%,rgba(120,100,80,0.14),transparent)] dark:bg-[radial-gradient(ellipse_80%_50%_at_50%_-20%,rgba(180,160,120,0.1),transparent)]"
       />
-      <div className="relative z-10 w-full max-w-lg">
+      <div
+        className={`relative z-10 w-full ${finished ? "max-w-2xl" : "max-w-lg"}`}
+      >
         <p className="text-center text-xs uppercase tracking-[0.2em] text-zinc-500 dark:text-zinc-400">
           {run.player_name} · Run #{run.run_id}
         </p>
@@ -193,14 +202,27 @@ export function PlayRun({ runId }: { runId: string }) {
         ) : null}
 
         {finished ? (
-          <div className="mt-10 text-center">
-            <h2 className="font-serif text-2xl font-semibold text-zinc-900 dark:text-zinc-50">
-              Hành trình tạm dừng
-            </h2>
-            <p className="mt-3 text-sm leading-relaxed text-zinc-600 dark:text-zinc-400">
-              Ngươi đã hoàn thành chặng này — hoặc chưa có sự kiện kế tiếp.
-            </p>
-            <div className="mt-8 flex flex-col gap-3">
+          <div className="mt-10">
+            <div className="text-center">
+              <h2 className="font-serif text-2xl font-semibold text-zinc-900 dark:text-zinc-50">
+                {run.history && run.history.length > 0
+                  ? "Nhật ký đã ghi"
+                  : "Hành trình tạm dừng"}
+              </h2>
+              <p className="mt-3 text-sm leading-relaxed text-zinc-600 dark:text-zinc-400">
+                {run.history && run.history.length > 0
+                  ? "Đường đi từng bước — kéo xem toàn bộ sơ đồ dọc bên dưới."
+                  : "Ngươi đã hoàn thành chặng này — hoặc chưa có sự kiện kế tiếp."}
+              </p>
+            </div>
+
+            {run.history && run.history.length > 0 ? (
+              <div className="mt-8 max-h-[min(70vh,520px)] overflow-y-auto pr-1">
+                <RunJourneyTimeline steps={run.history} />
+              </div>
+            ) : null}
+
+            <div className="mt-8 flex flex-col gap-3 text-center">
               <Link
                 href="/play"
                 className="text-sm font-medium text-amber-800 underline-offset-4 hover:underline dark:text-amber-200/90"
@@ -249,7 +271,7 @@ export function PlayRun({ runId }: { runId: string }) {
             <button
               type="button"
               className="font-medium text-amber-800 underline-offset-4 hover:underline dark:text-amber-200/90"
-              onClick={() => void load()}
+              onClick={() => void fetchRun()}
             >
               Thử lại
             </button>

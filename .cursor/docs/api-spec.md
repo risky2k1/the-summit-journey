@@ -42,7 +42,7 @@ Response:
 
 ## GET /api/run/:runId
 
-Session Supabase. Trả run của user: `run_id`, `player_name`, `stats`, `current_event_id`, `event` (payload đầy đủ hoặc `null` nếu đã kết thúc / chưa gán).
+Session Supabase. Trả run của user: `run_id`, `player_name`, `stats`, `current_event_id`, `event` (payload đầy đủ hoặc `null` nếu đã kết thúc / chưa gán), `history` (mảng các bước đã chơi: `step`, `event` { id, title, type }, `choice` { id, content } — từ `run_history`, thứ tự thời gian).
 
 ---
 
