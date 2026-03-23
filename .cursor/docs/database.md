@@ -8,6 +8,7 @@
 - description
 - type (normal, encounter, ending)
 - is_active
+- pick_weight (int ≥ 1, mặc định 1) — trọng số khi engine chọn event **ngẫu nhiên** (`findNextEventId`). Không ảnh hưởng thứ tự màn khi `choices.next_event_id` đã gán.
 
 ### choices
 - id
@@ -67,5 +68,6 @@
 - Migration khởi tạo: `prisma/migrations/20260320120000_init/`.
 - **Enum `physical`:** `prisma/migrations/20260320183000_physical_stat_and_seed_events/` — chỉ `ALTER TYPE ... ADD VALUE` (tách transaction vì PostgreSQL).
 - **Chương mở (20 event đầu):** `prisma/migrations/20260320183100_seed_early_events/` — seed `events` id 1–20, `choices`, `choice_effects`, `event_tags`.
+- **Nhánh demo + pick_weight + tag karma:** `prisma/migrations/20260323140000_event_pick_weight_fork_and_karma_tags/` — cột `pick_weight`, sửa `choices.id=4` (fork), vài `pick_weight` & tag `ma_dao`/`chinh_dao`.
 - Áp dụng DB: `pnpm db:migrate` (dev) hoặc `pnpm db:migrate:deploy` (CI/prod). Có thể áp DDL qua Supabase MCP `apply_migration` rồi `prisma migrate resolve --applied <tên_thư_mục>`.
 - Client: `pnpm db:generate` → import từ `@/generated/prisma/client` (singleton gợi ý: `lib/db.ts` dùng `@prisma/adapter-pg` + `DATABASE_URL`).

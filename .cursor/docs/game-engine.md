@@ -37,3 +37,8 @@ function handleChoice(runId, choiceId):
   - karma < -20 → ma_dao
   - karma > 20 → chinh_dao
 - fallback → random event
+- Trong pool ứng viên: chọn **có trọng số** theo `events.pick_weight` (mặc định 1), không phải uniform.
+
+## Nhánh nội dung (DB)
+
+- Hai lựa chọn có `next_event_id` **khác nhau** → cốt truyện tách thật (ví dụ chương mở: tại event 2, lối thung lũng tới thẳng event 4, bỏ qua event 3).

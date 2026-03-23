@@ -29,6 +29,8 @@ model Event {
   description String    @db.Text
   type        EventType
   isActive    Boolean   @default(true) @map("is_active")
+  /// Trọng số khi engine chọn event ngẫu nhiên (`findNextEventId`). Tối thiểu hiệu dụng = 1.
+  pickWeight  Int       @default(1) @map("pick_weight")
 
   choicesFromHere Choice[]     @relation("EventChoices")
   choicesPointingHere Choice[] @relation("NextEvent")

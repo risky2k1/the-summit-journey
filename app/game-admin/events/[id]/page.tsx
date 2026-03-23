@@ -51,6 +51,7 @@ export default async function GameAdminEventDetailPage({
           description: event.description,
           type: event.type,
           isActive: event.isActive,
+          pickWeight: event.pickWeight,
           choicesFromHere: event.choicesFromHere.map((c) => ({
             id: c.id,
             content: c.content,

@@ -37,6 +37,7 @@ export async function createEvent() {
       description: "",
       type: EventType.normal,
       isActive: true,
+      pickWeight: 1,
     },
   });
   revalidatePath("/game-admin/events");
@@ -56,6 +57,9 @@ export async function updateEventAction(
   const description = String(formData.get("description") ?? "");
   const typeRaw = String(formData.get("type") ?? "");
   const isActive = formData.get("is_active") === "on";
+  const pickWeightRaw = Number(formData.get("pick_weight"));
+  const pickWeight =
+    Number.isInteger(pickWeightRaw) && pickWeightRaw >= 1 ? pickWeightRaw : 1;
 
   if (!title) return "Tiêu đề không được để trống";
   if (!EVENT_TYPES.has(typeRaw as EventType)) {
@@ -69,6 +73,7 @@ export async function updateEventAction(
       description,
       type: typeRaw as EventType,
       isActive,
+      pickWeight,
     },
   });
   revalidatePath("/game-admin/events");

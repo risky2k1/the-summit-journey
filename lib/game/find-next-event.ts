@@ -1,9 +1,10 @@
 import type { EventType } from "@/generated/prisma/client";
 import type { PlayerStats } from "@/lib/game/player-stats";
+import { pickWeightedById } from "@/lib/game/weighted-pick";
 import { prisma } from "@/lib/db";
 
 /**
- * Khi `next_event_id` trống và không phải ending — chọn event kế theo karma + random có trọng số.
+ * Khi `next_event_id` trống và không phải ending — chọn event kế theo karma + random có trọng số (`pick_weight`).
  * Khớp hướng dẫn trong `.cursor/docs/game-engine.md`.
  */
 export async function findNextEventId(stats: PlayerStats): Promise<number | null> {
@@ -17,13 +18,15 @@ export async function findNextEventId(stats: PlayerStats): Promise<number | null
     type: { not: "ending" as EventType },
   };
 
+  const selectIdWeight = { id: true, pickWeight: true } as const;
+
   const tagged = tag
     ? await prisma.event.findMany({
         where: {
           ...baseWhere,
           tags: { some: { tag } },
         },
-        select: { id: true },
+        select: selectIdWeight,
       })
     : [];
 
@@ -32,9 +35,8 @@ export async function findNextEventId(stats: PlayerStats): Promise<number | null
       ? tagged
       : await prisma.event.findMany({
           where: baseWhere,
-          select: { id: true },
+          select: selectIdWeight,
         });
 
-  if (pool.length === 0) return null;
-  return pool[Math.floor(Math.random() * pool.length)]!.id;
+  return pickWeightedById(pool);
 }

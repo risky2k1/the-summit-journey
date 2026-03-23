@@ -36,6 +36,7 @@ export function EventDetailClient({
     description: string;
     type: string;
     isActive: boolean;
+    pickWeight: number;
     choicesFromHere: Choice[];
   };
   eventTypeOptions: readonly string[];
@@ -105,6 +106,23 @@ export function EventDetailClient({
               Đang kích hoạt (is_active)
             </label>
           </div>
+        </div>
+        <div>
+          <label className={labelClass} htmlFor="ev-pick-weight">
+            pick_weight (random pool)
+          </label>
+          <input
+            id="ev-pick-weight"
+            name="pick_weight"
+            type="number"
+            min={1}
+            step={1}
+            defaultValue={event.pickWeight}
+            className={inputClass}
+          />
+          <p className="mt-1 text-[11px] text-zinc-500 dark:text-zinc-400">
+            Trọng số khi engine chọn event ngẫu nhiên (findNextEvent). Không ảnh hưởng next_event_id cố định trên choice.
+          </p>
         </div>
         <button
           type="submit"
