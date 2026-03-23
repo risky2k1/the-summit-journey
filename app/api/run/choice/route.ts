@@ -56,6 +56,8 @@ export async function POST(request: Request) {
         event: result.event,
         stats: result.stats,
         finished: result.finished,
+        applied_effects: result.applied_effects,
+        resolved_next_event_id: result.resolved_next_event_id,
       });
     } catch (err) {
       const code = err instanceof Error ? err.message : "";

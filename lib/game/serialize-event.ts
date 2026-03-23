@@ -4,6 +4,8 @@ import { prisma } from "@/lib/db";
 export type ApiChoicePayload = {
   id: number;
   content: string;
+  /** Theo DB: đích cố định; `null` có thể là kết thúc hoặc do engine chọn ngẫu nhiên. */
+  next_event_id: number | null;
   effects: { stat: string; value: number }[];
   conditions: { stat: string; operator: string; value: number }[];
 };
@@ -42,6 +44,7 @@ export function toApiEventPayload(row: {
   choicesFromHere: {
     id: number;
     content: string;
+    nextEventId: number | null;
     effects: { stat: string; value: number }[];
     conditions: { stat: string; operator: string; value: number }[];
   }[];
@@ -56,6 +59,7 @@ export function toApiEventPayload(row: {
     choices: row.choicesFromHere.map((c) => ({
       id: c.id,
       content: c.content,
+      next_event_id: c.nextEventId,
       effects: c.effects.map((e) => ({ stat: e.stat, value: e.value })),
       conditions: c.conditions.map((x) => ({
         stat: x.stat,

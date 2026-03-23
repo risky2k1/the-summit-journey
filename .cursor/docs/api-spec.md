@@ -33,8 +33,12 @@ Response:
 {
   "event": {} | null,
   "stats": {},
-  "finished": boolean
+  "finished": boolean,
+  "applied_effects": [ { "stat": "physical", "delta": 2 } ],
+  "resolved_next_event_id": number | null
 }
+
+`applied_effects` — từng dòng `choice_effects` đã áp; `resolved_next_event_id` là màn thực tế (có thể khác `choices.next_event_id` khi random).
 
 `finished === true` khi không còn sự kiện kế (ví dụ ending, hoặc `next_event_id` trống tại ending).
 

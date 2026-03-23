@@ -2,14 +2,18 @@
 
 import type { ChoiceCondition } from "@/generated/prisma/client";
 import type { PlayerStats } from "@/lib/game/player-stats";
+import { formatConditionLine, labelForStat } from "@/lib/game/stat-copy";
 import { passConditions } from "@/lib/game/stats-helpers";
 import Link from "next/link";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { describeBranching, describeChoiceDestination } from "./branch-copy";
+import { formatEffectsLine, PlayerStatPanel } from "./player-stat-panel";
 import { RunJourneyTimeline } from "./run-journey-timeline";
 
 type ApiChoice = {
   id: number;
   content: string;
+  next_event_id: number | null;
   effects: { stat: string; value: number }[];
   conditions: { stat: string; operator: string; value: number }[];
 };
@@ -38,11 +42,30 @@ type RunPayload = {
   history?: HistoryStep[];
 };
 
+type ChoiceFeedback = {
+  effects: { stat: string; delta: number }[];
+  nextTitle: string | null;
+  ended: boolean;
+};
+
 export function PlayRun({ runId }: { runId: string }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [run, setRun] = useState<RunPayload | null>(null);
   const [choosingId, setChoosingId] = useState<number | null>(null);
+  const [statPulse, setStatPulse] = useState<Partial<Record<keyof PlayerStats, number>>>({});
+  const [choiceFeedback, setChoiceFeedback] = useState<ChoiceFeedback | null>(null);
+
+  const clearPulseLater = useCallback(() => {
+    const t = setTimeout(() => setStatPulse({}), 5200);
+    return () => clearTimeout(t);
+  }, []);
+
+  useEffect(() => {
+    const has = Object.keys(statPulse).length > 0;
+    if (!has) return;
+    return clearPulseLater();
+  }, [statPulse, clearPulseLater]);
 
   const fetchRun = useCallback(async (opts?: { silent?: boolean }) => {
     if (!opts?.silent) {
@@ -85,9 +108,26 @@ export function PlayRun({ runId }: { runId: string }) {
     void fetchRun();
   }, [fetchRun]);
 
+  const branchNote = useMemo(() => {
+    if (!run?.event) return null;
+    return describeBranching(run.event.choices, run.event.type);
+  }, [run?.event]);
+
+  function mergePulse(effects: { stat: string; delta: number }[]) {
+    const next: Partial<Record<keyof PlayerStats, number>> = {};
+    const keys = new Set<keyof PlayerStats>(["tu_vi", "karma", "luck", "physical"]);
+    for (const e of effects) {
+      const k = e.stat as keyof PlayerStats;
+      if (!keys.has(k)) continue;
+      next[k] = (next[k] ?? 0) + e.delta;
+    }
+    setStatPulse(next);
+  }
+
   async function pickChoice(choiceId: number) {
     setChoosingId(choiceId);
     setError(null);
+    setChoiceFeedback(null);
     try {
       const res = await fetch("/api/run/choice", {
         method: "POST",
@@ -99,6 +139,8 @@ export function PlayRun({ runId }: { runId: string }) {
         event: ApiEvent | null;
         stats: PlayerStats;
         finished?: boolean;
+        applied_effects?: { stat: string; delta: number }[];
+        resolved_next_event_id?: number | null;
         error?: string;
       } | null = null;
       try {
@@ -119,10 +161,25 @@ export function PlayRun({ runId }: { runId: string }) {
         setError("Phản hồi thiếu stats.");
         return;
       }
+
+      const fx = data.applied_effects ?? [];
+      mergePulse(fx);
+
       if (data.finished || !data.event) {
+        setChoiceFeedback({
+          effects: fx,
+          nextTitle: null,
+          ended: true,
+        });
         await fetchRun({ silent: true });
         return;
       }
+
+      setChoiceFeedback({
+        effects: fx,
+        nextTitle: data.event.title,
+        ended: false,
+      });
       setRun({
         run_id: Number(runId),
         player_name: run?.player_name ?? "",
@@ -161,7 +218,8 @@ export function PlayRun({ runId }: { runId: string }) {
 
   if (!run) return null;
 
-  const finished = run.current_event_id == null || run.event == null;
+  const activeEvent = run.event;
+  const finished = run.current_event_id == null || activeEvent == null;
 
   return (
     <div className="relative flex min-h-full flex-1 flex-col items-center overflow-hidden px-6 py-16">
@@ -176,24 +234,35 @@ export function PlayRun({ runId }: { runId: string }) {
           {run.player_name} · Run #{run.run_id}
         </p>
 
-        <dl className="mt-6 grid grid-cols-2 gap-2 text-sm sm:grid-cols-4">
-          {(
-            [
-              ["Tu vi", run.stats.tu_vi],
-              ["Karma", run.stats.karma],
-              ["Luck", run.stats.luck],
-              ["Thể lực", run.stats.physical],
-            ] as const
-          ).map(([label, v]) => (
-            <div
-              key={label}
-              className="rounded-lg border border-amber-900/20 bg-white/60 px-3 py-2 text-center dark:border-amber-200/10 dark:bg-zinc-950/40"
-            >
-              <dt className="text-xs text-zinc-500 dark:text-zinc-400">{label}</dt>
-              <dd className="font-semibold tabular-nums text-zinc-900 dark:text-zinc-100">{v}</dd>
-            </div>
-          ))}
-        </dl>
+        <div className="mt-6">
+          <PlayerStatPanel stats={run.stats} pulse={statPulse} />
+        </div>
+
+        {!finished && choiceFeedback ? (
+          <div
+            className="mt-4 rounded-xl border border-amber-800/30 bg-amber-50/95 px-4 py-3 text-sm shadow-sm dark:border-amber-400/20 dark:bg-amber-950/40"
+            role="status"
+          >
+            <p className="text-xs font-semibold uppercase tracking-wide text-amber-900 dark:text-amber-100/90">
+              Vừa áp dụng
+            </p>
+            <p className="mt-1 font-medium text-zinc-900 dark:text-zinc-100">
+              {formatEffectsLine(choiceFeedback.effects)}
+            </p>
+            {choiceFeedback.ended ? (
+              <p className="mt-2 text-zinc-700 dark:text-zinc-300">
+                Chặng khép — xem nhật ký bên dưới (nếu có) để soi lại toàn đường đi.
+              </p>
+            ) : choiceFeedback.nextTitle ? (
+              <p className="mt-2 text-zinc-700 dark:text-zinc-300">
+                <span className="text-zinc-500 dark:text-zinc-500">Màn tiếp: </span>
+                <span className="font-medium text-amber-950 dark:text-amber-100">
+                  {choiceFeedback.nextTitle}
+                </span>
+              </p>
+            ) : null}
+          </div>
+        ) : null}
 
         {error ? (
           <p className="mt-4 text-center text-sm text-red-600 dark:text-red-400" role="alert">
@@ -234,16 +303,37 @@ export function PlayRun({ runId }: { runId: string }) {
               </Link>
             </div>
           </div>
-        ) : run.event ? (
+        ) : activeEvent ? (
           <article className="mt-10 rounded-xl border border-amber-900/25 bg-amber-950/[0.05] px-5 py-6 dark:border-amber-200/15 dark:bg-amber-100/[0.05]">
-            <h2 className="font-serif text-xl font-semibold leading-snug text-zinc-900 dark:text-zinc-50">
-              {run.event.title}
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="rounded-md bg-zinc-200/80 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300">
+                {activeEvent.type}
+              </span>
+              {activeEvent.tags.slice(0, 3).map((t) => (
+                <span
+                  key={t}
+                  className="rounded-md border border-amber-900/15 px-2 py-0.5 text-[10px] text-zinc-600 dark:border-amber-200/15 dark:text-zinc-400"
+                >
+                  {t}
+                </span>
+              ))}
+            </div>
+            <h2 className="mt-3 font-serif text-xl font-semibold leading-snug text-zinc-900 dark:text-zinc-50">
+              {activeEvent.title}
             </h2>
             <p className="mt-4 whitespace-pre-wrap text-sm leading-relaxed text-zinc-700 dark:text-zinc-300">
-              {run.event.description}
+              {activeEvent.description}
             </p>
-            <ul className="mt-8 space-y-3">
-              {run.event.choices.map((c) => {
+
+            {branchNote ? (
+              <p className="mt-5 rounded-lg border border-amber-800/15 bg-amber-100/40 px-3 py-2.5 text-xs leading-relaxed text-zinc-700 dark:border-amber-200/10 dark:bg-zinc-900/50 dark:text-zinc-300">
+                <span className="font-semibold text-amber-950 dark:text-amber-100/90">Cốt truyện &amp; nhánh: </span>
+                {branchNote}
+              </p>
+            ) : null}
+
+            <ul className="mt-8 space-y-5">
+              {activeEvent.choices.map((c) => {
                 const ok = passConditions(run.stats, c.conditions as ChoiceCondition[]);
                 const disabled = !ok || choosingId !== null;
                 return (
@@ -254,10 +344,42 @@ export function PlayRun({ runId }: { runId: string }) {
                       onClick={() => void pickChoice(c.id)}
                       className="w-full rounded-lg border border-amber-900/20 bg-white/70 px-4 py-3 text-left text-sm leading-relaxed text-zinc-900 transition hover:bg-white disabled:cursor-not-allowed disabled:opacity-45 dark:border-amber-200/10 dark:bg-zinc-950/50 dark:text-zinc-100 dark:hover:bg-zinc-900/80"
                     >
-                      {choosingId === c.id ? "…" : null}
-                      {c.content}
+                      <span className="block">
+                        {choosingId === c.id ? "… " : null}
+                        {c.content}
+                      </span>
+                      {c.effects.length > 0 ? (
+                        <span className="mt-2 flex flex-wrap gap-1.5">
+                          {c.effects.map((e, i) => (
+                            <span
+                              key={`${c.id}-fx-${i}`}
+                              className={`inline-block rounded-md px-2 py-0.5 text-[11px] font-medium tabular-nums ${
+                                e.value >= 0
+                                  ? "bg-emerald-100/90 text-emerald-900 dark:bg-emerald-950/60 dark:text-emerald-200"
+                                  : "bg-rose-100/90 text-rose-900 dark:bg-rose-950/50 dark:text-rose-200"
+                              }`}
+                            >
+                              {e.value > 0 ? "+" : ""}
+                              {e.value} {labelForStat(e.stat)}
+                            </span>
+                          ))}
+                        </span>
+                      ) : (
+                        <span className="mt-2 block text-[11px] text-zinc-500">Không đổi chỉ số</span>
+                      )}
+                      <span className="mt-2 block text-[11px] text-amber-900/80 dark:text-amber-200/80">
+                        {describeChoiceDestination(c, activeEvent.type)}
+                      </span>
+                      {c.conditions.length > 0 ? (
+                        <span className="mt-1.5 block text-[11px] text-zinc-500">
+                          Cần:{" "}
+                          {c.conditions.map((x) => formatConditionLine(x)).join(" · ")}
+                        </span>
+                      ) : null}
                       {!ok ? (
-                        <span className="mt-1 block text-xs text-zinc-500">Chưa đủ điều kiện</span>
+                        <span className="mt-2 block text-xs font-medium text-rose-600 dark:text-rose-400">
+                          Chưa đủ điều kiện để chọn
+                        </span>
                       ) : null}
                     </button>
                   </li>

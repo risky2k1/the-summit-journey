@@ -8,10 +8,16 @@ import {
 import { getEventForApi, type ApiEventPayload } from "@/lib/game/serialize-event";
 import { prisma } from "@/lib/db";
 
+export type AppliedEffectDelta = { stat: string; delta: number };
+
 export type HandleChoiceResult = {
   stats: PlayerStats;
   event: ApiEventPayload | null;
   finished: boolean;
+  /** Chỉ số cộng trừ từ `choice_effects` (một dòng = một delta). */
+  applied_effects: AppliedEffectDelta[];
+  /** Event id thực tế sau khi resolve (có thể khác `choice.nextEventId` khi random). */
+  resolved_next_event_id: number | null;
 };
 
 export async function handlePlayerChoice(input: {
@@ -48,6 +54,11 @@ export async function handlePlayerChoice(input: {
     throw new Error("CHOICE_CONDITIONS_FAILED");
   }
 
+  const applied_effects: AppliedEffectDelta[] = choice.effects.map((e) => ({
+    stat: e.stat,
+    delta: e.value,
+  }));
+
   stats = applyChoiceEffects(stats, choice.effects);
 
   const fromEvent = choice.event;
@@ -60,6 +71,8 @@ export async function handlePlayerChoice(input: {
   } else {
     nextEventId = await findNextEventId(stats);
   }
+
+  const resolved_next_event_id = nextEventId;
 
   const previousEventId = run.currentEventId;
 
@@ -81,9 +94,21 @@ export async function handlePlayerChoice(input: {
   ]);
 
   if (nextEventId == null) {
-    return { stats, event: null, finished: true };
+    return {
+      stats,
+      event: null,
+      finished: true,
+      applied_effects,
+      resolved_next_event_id,
+    };
   }
 
   const event = await getEventForApi(nextEventId);
-  return { stats, event, finished: false };
+  return {
+    stats,
+    event,
+    finished: false,
+    applied_effects,
+    resolved_next_event_id,
+  };
 }
