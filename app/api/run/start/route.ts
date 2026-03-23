@@ -1,9 +1,13 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { newRunSeed, rollInitialStats } from "@/lib/game/player-stats";
+import { getEventForApi } from "@/lib/game/serialize-event";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 export const runtime = "nodejs";
+
+/** Chương mở: bắt đầu tại event 1 (seed `20260320183100_seed_early_events`). */
+const START_EVENT_ID = 1;
 
 const NAME_MIN = 1;
 const NAME_MAX = 32;
@@ -55,14 +59,17 @@ export async function POST(request: Request) {
         playerName: name,
         stats,
         seed,
+        currentEventId: START_EVENT_ID,
       },
     });
+
+    const event = await getEventForApi(START_EVENT_ID);
 
     return NextResponse.json({
       run_id: run.id,
       player_name: name,
       stats,
-      event: {},
+      event: event ?? {},
     });
   } catch (err) {
     console.error("[POST /api/run/start]", err);

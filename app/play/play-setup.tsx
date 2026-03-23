@@ -7,6 +7,7 @@ type StartResponse = {
   run_id: number;
   player_name: string;
   stats: { tu_vi: number; karma: number; luck: number; physical: number };
+  event?: unknown;
 };
 
 export function PlaySetup() {
@@ -123,6 +124,12 @@ export function PlaySetup() {
           </p>
 
           <div className="mt-8 flex flex-col gap-3">
+            <Link
+              href={`/play/${result.run_id}`}
+              className="block rounded-lg border border-amber-900/25 bg-amber-950/[0.08] py-3 text-center text-sm font-medium text-zinc-900 shadow-sm transition hover:bg-amber-950/12 dark:border-amber-200/15 dark:bg-amber-100/[0.08] dark:text-zinc-100 dark:hover:bg-amber-100/12"
+            >
+              Vào chương →
+            </Link>
             <Link
               href="/dashboard"
               className="block text-center text-sm font-medium text-amber-800 underline-offset-4 hover:underline dark:text-amber-200/90"
