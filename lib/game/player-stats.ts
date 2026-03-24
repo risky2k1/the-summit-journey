@@ -7,13 +7,17 @@ export type PlayerStats = {
   physical: number;
 };
 
-/** Random chỉ số ban đầu — có thể cân bằng sau. */
+function rollInt(min: number, max: number): number {
+  return min + Math.floor(Math.random() * (max - min + 1));
+}
+
+/** Random chỉ số mở đầu — thấp để còn chỗ tăng qua ~50 chương. */
 export function rollInitialStats(): PlayerStats {
   return {
-    tu_vi: 12 + Math.floor(Math.random() * 39),
-    karma: -35 + Math.floor(Math.random() * 71),
-    luck: 8 + Math.floor(Math.random() * 43),
-    physical: 18 + Math.floor(Math.random() * 33),
+    tu_vi: rollInt(2, 8),
+    karma: rollInt(-6, 6),
+    luck: rollInt(2, 8),
+    physical: rollInt(3, 10),
   };
 }
 

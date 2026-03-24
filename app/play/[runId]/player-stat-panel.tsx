@@ -3,12 +3,12 @@
 import type { PlayerStats } from "@/lib/game/player-stats";
 import { karmaArcLabel, labelForStat } from "@/lib/game/stat-copy";
 
-/** Gần đúng biên random ban đầu (`rollInitialStats`) — để vạch tương đối. */
+/** Biên hiển thị thanh (hành trình dài); không khóa theo random ban đầu. */
 const RANGES: Record<keyof PlayerStats, [number, number]> = {
-  tu_vi: [12, 50],
-  karma: [-35, 35],
-  luck: [8, 50],
-  physical: [18, 50],
+  tu_vi: [0, 120],
+  karma: [-80, 80],
+  luck: [0, 80],
+  physical: [0, 80],
 };
 
 function pct(v: number, [min, max]: [number, number]): number {

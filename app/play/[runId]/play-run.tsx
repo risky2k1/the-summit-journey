@@ -2,7 +2,7 @@
 
 import type { ChoiceCondition } from "@/generated/prisma/client";
 import type { PlayerStats } from "@/lib/game/player-stats";
-import { formatConditionLine, labelForStat } from "@/lib/game/stat-copy";
+import { formatConditionLine } from "@/lib/game/stat-copy";
 import { passConditions } from "@/lib/game/stats-helpers";
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
@@ -348,25 +348,6 @@ export function PlayRun({ runId }: { runId: string }) {
                         {choosingId === c.id ? "… " : null}
                         {c.content}
                       </span>
-                      {c.effects.length > 0 ? (
-                        <span className="mt-2 flex flex-wrap gap-1.5">
-                          {c.effects.map((e, i) => (
-                            <span
-                              key={`${c.id}-fx-${i}`}
-                              className={`inline-block rounded-md px-2 py-0.5 text-[11px] font-medium tabular-nums ${
-                                e.value >= 0
-                                  ? "bg-emerald-100/90 text-emerald-900 dark:bg-emerald-950/60 dark:text-emerald-200"
-                                  : "bg-rose-100/90 text-rose-900 dark:bg-rose-950/50 dark:text-rose-200"
-                              }`}
-                            >
-                              {e.value > 0 ? "+" : ""}
-                              {e.value} {labelForStat(e.stat)}
-                            </span>
-                          ))}
-                        </span>
-                      ) : (
-                        <span className="mt-2 block text-[11px] text-zinc-500">Không đổi chỉ số</span>
-                      )}
                       <span className="mt-2 block text-[11px] text-amber-900/80 dark:text-amber-200/80">
                         {describeChoiceDestination(c, activeEvent.type)}
                       </span>
