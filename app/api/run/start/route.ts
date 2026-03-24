@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
-import { generateCharacterCommentary } from "@/lib/ai/character-commentary";
 import { prisma } from "@/lib/db";
 import { newRunSeed, rollInitialStats } from "@/lib/game/player-stats";
 import { getEventForApi } from "@/lib/game/serialize-event";
+import { resolvePlayApiUserId } from "@/lib/dev-play-bypass";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 export const runtime = "nodejs";
@@ -38,7 +38,8 @@ export async function POST(request: Request) {
     const {
       data: { user },
     } = await supabase.auth.getUser();
-    if (!user) {
+    const userId = resolvePlayApiUserId(user?.id);
+    if (!userId) {
       return NextResponse.json({ error: "Cần đăng nhập." }, { status: 401 });
     }
 
@@ -69,7 +70,7 @@ export async function POST(request: Request) {
 
     const run = await prisma.playerRun.create({
       data: {
-        userId: user.id,
+        userId,
         playerName: name,
         stats,
         seed,
@@ -79,22 +80,11 @@ export async function POST(request: Request) {
 
     const event = await getEventForApi(startEventId);
 
-    let character_commentary: string | null = null;
-    try {
-      character_commentary = await generateCharacterCommentary({
-        playerName: name,
-        stats,
-      });
-    } catch (err) {
-      console.error("[POST /api/run/start] character_commentary", err);
-    }
-
     return NextResponse.json({
       run_id: run.id,
       player_name: name,
       stats,
       event: event ?? {},
-      character_commentary,
     });
   } catch (err) {
     console.error("[POST /api/run/start]", err);

@@ -56,6 +56,7 @@
 - current_event_id
 - stats (JSONB) — `tu_vi`, `karma`, `luck`, `physical`
 - seed
+- character_commentary (TEXT, nullable) — nhận xét OpenRouter sau khi tạo run; cache, không bắt buộc
 
 ### run_history
 - id
@@ -84,5 +85,6 @@
 - **Chương mở (20 event đầu):** `prisma/migrations/20260320183100_seed_early_events/` — seed `events` id 1–20, `choices`, `choice_effects`, `event_tags`.
 - **Nhánh demo + pick_weight + tag karma:** `prisma/migrations/20260323140000_event_pick_weight_fork_and_karma_tags/` — cột `pick_weight`, sửa `choices.id=4` (fork), vài `pick_weight` & tag `ma_dao`/`chinh_dao`.
 - **Campaign / chapter / `events.ref`:** `prisma/migrations/20260324180000_campaign_chapters_event_ref/` — bảng `campaigns`, `chapters`; cột `events.ref`, `events.chapter_id`. Nội dung full campaign: `pnpm db:seed` (đọc `.n8n/result.json`, xóa story cũ + reset sequence).
+- **`player_runs.character_commentary`:** `prisma/migrations/20260325120000_player_run_character_commentary/` — cache lời thiên cơ (OpenRouter).
 - Áp dụng DB: `pnpm db:migrate` (dev) hoặc `pnpm db:migrate:deploy` (CI/prod). Có thể áp DDL qua Supabase MCP `apply_migration` rồi `prisma migrate resolve --applied <tên_thư_mục>`.
 - Client: `pnpm db:generate` → import từ `@/generated/prisma/client` (singleton gợi ý: `lib/db.ts` dùng `@prisma/adapter-pg` + `DATABASE_URL`).

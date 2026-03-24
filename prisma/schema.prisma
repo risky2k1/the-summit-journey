@@ -133,6 +133,8 @@ model PlayerRun {
   currentEventId Int?    @map("current_event_id")
   stats          Json    @default("{}")
   seed           String  @db.Text
+  /// Nhận xét lão tu (OpenRouter), sinh sau khi tạo run — có thể null.
+  characterCommentary String? @map("character_commentary") @db.Text
 
   currentEvent Event?       @relation("CurrentEvent", fields: [currentEventId], references: [id], onDelete: SetNull)
   history      RunHistory[]

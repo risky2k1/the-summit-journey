@@ -14,13 +14,23 @@ Response:
   "run_id": number,
   "player_name": "string",
   "stats": { "tu_vi": number, "karma": number, "luck": number, "physical": number },
-  "event": { },
-  "character_commentary": string | null
+  "event": { }
 }
 
 `event` là payload sự kiện hiện tại (id, title, description, type, tags, choices kèm effects/conditions) — khớp `GET /api/event/:id`.
 
-`character_commentary`: nhận xét ngắn do OpenRouter sinh từ tên + chỉ số; `null` nếu thiếu `OPEN_ROUTER_*` hoặc gọi model thất bại (tạo run vẫn thành công).
+---
+
+## POST /api/run/:runId/character-commentary
+
+Sinh (hoặc trả cache) **lời thiên cơ** — OpenRouter từ tên + stats của run. **Yêu cầu đăng nhập**; run phải thuộc user.
+
+Response:
+{
+  "character_commentary": string | null
+}
+
+`null` nếu thiếu `OPEN_ROUTER_*` hoặc gọi model thất bại. Lần gọi thành công có text thì lưu `player_runs.character_commentary` (cache).
 
 ---
 

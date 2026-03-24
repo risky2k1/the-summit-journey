@@ -3,7 +3,12 @@ import { NextResponse, type NextRequest } from "next/server";
 import { isSuperAdminUser } from "@/lib/auth/super-admin";
 
 const AUTH_PREFIX = "/auth";
-const PROTECTED = ["/dashboard", "/play"];
+const PROTECTED = [
+  "/dashboard",
+  /* TEMP (local test UI /play): bỏ comment dòng dưới trước khi commit hoặc deploy.
+   * Lưu ý: POST /api/run/start và commentary vẫn cần session Supabase — chỉ bỏ redirect trang. */
+  // "/play",
+];
 const GAME_ADMIN = "/game-admin";
 
 function isGameAdminPath(pathname: string) {
