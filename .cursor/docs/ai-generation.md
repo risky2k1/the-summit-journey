@@ -1,5 +1,7 @@
 # AI Event Generation
 
+Viết cốt batch / prompt chi tiết cho AI khác: **`story-authoring-prompt.md`** (JSON nhiều màn + `next_event_ref`, giải thích `weight` vs `pick_weight`).
+
 ## Khi nào gọi AI
 
 - Khi không tìm đủ event trong DB

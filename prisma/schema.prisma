@@ -23,14 +23,46 @@ enum PlayerStat {
   physical
 }
 
+/// Một bản campaign (ví dụ seed từ `.n8n/result.json`).
+model Campaign {
+  id              Int       @id @default(autoincrement())
+  slug            String    @unique @default("main")
+  totalChapters   Int       @map("total_chapters")
+  totalEvents     Int       @map("total_events")
+  /// `events.ref` của màn mở đầu (chương 1, event đầu tiên).
+  startEventRef   String    @map("start_event_ref")
+
+  chapters Chapter[]
+
+  @@map("campaigns")
+}
+
+model Chapter {
+  id             Int    @id @default(autoincrement())
+  campaignId     Int    @map("campaign_id")
+  chapterIndex   Int    @map("chapter_index")
+  title          String @db.Text
+  summaryOneLine String @map("summary_one_line") @db.Text
+
+  campaign Campaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  events   Event[]
+
+  @@unique([campaignId, chapterIndex])
+  @@map("chapters")
+}
+
 model Event {
   id          Int       @id @default(autoincrement())
+  /// Slug ổn định từ pipeline n8n / AI (`c01_mo_dau`, …); map `choices.next_event_ref` khi seed.
+  ref         String?   @unique
   title       String
   description String    @db.Text
   type        EventType
   isActive    Boolean   @default(true) @map("is_active")
   /// Trọng số khi engine chọn event ngẫu nhiên (`findNextEventId`). Tối thiểu hiệu dụng = 1.
   pickWeight  Int       @default(1) @map("pick_weight")
+  chapterId   Int?      @map("chapter_id")
+  chapter     Chapter?  @relation(fields: [chapterId], references: [id], onDelete: SetNull)
 
   choicesFromHere Choice[]     @relation("EventChoices")
   choicesPointingHere Choice[] @relation("NextEvent")
@@ -38,6 +70,7 @@ model Event {
   runsAtCurrent     PlayerRun[] @relation("CurrentEvent")
   runHistoryEvents  RunHistory[]
 
+  @@index([chapterId])
   @@map("events")
 }
 

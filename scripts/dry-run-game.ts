@@ -12,14 +12,26 @@ import { newRunSeed, rollInitialStats } from "@/lib/game/player-stats";
 
 const TEST_USER_ID = "00000000-0000-0000-0000-000000000001";
 
+async function resolveStartEventId(): Promise<number> {
+  const campaign = await prisma.campaign.findUnique({ where: { slug: "main" } });
+  if (!campaign) throw new Error("Chạy `pnpm db:seed` trước (thiếu campaign main).");
+  const ev = await prisma.event.findFirst({
+    where: { ref: campaign.startEventRef, isActive: true },
+    select: { id: true },
+  });
+  if (!ev) throw new Error(`Không tìm thấy event ref "${campaign.startEventRef}".`);
+  return ev.id;
+}
+
 async function main() {
+  const startEventId = await resolveStartEventId();
   const run = await prisma.playerRun.create({
     data: {
       userId: TEST_USER_ID,
       playerName: "DryRun",
       stats: rollInitialStats(),
       seed: newRunSeed(),
-      currentEventId: 1,
+      currentEventId: startEventId,
     },
   });
 

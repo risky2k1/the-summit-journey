@@ -12,6 +12,7 @@
     "db:migrate:deploy": "prisma migrate deploy",
     "db:push": "prisma db push",
     "db:studio": "prisma studio",
+    "db:seed": "prisma db seed",
     "game:dry-run": "tsx scripts/dry-run-game.ts",
     "postinstall": "prisma generate"
   },

@@ -2,8 +2,22 @@
 ## Use Supabase
 ## Tables
 
+### campaigns
+- id
+- slug (unique, MVP: `main`)
+- total_chapters, total_events — snapshot từ nguồn seed (ví dụ `.n8n/result.json`)
+- start_event_ref — khớp `events.ref` của màn mở đầu; `POST /api/run/start` dùng để gán `current_event_id`
+
+### chapters
+- id
+- campaign_id
+- chapter_index (unique theo campaign)
+- title, summary_one_line
+
 ### events
 - id
+- ref (unique, nullable) — slug ổn định từ biên kịch / n8n (`c01_mo_dau`, …); seed map `choices.next_event_ref` → `next_event_id`
+- chapter_id (nullable) — gắn event vào chương trong campaign
 - title
 - description
 - type (normal, encounter, ending)
@@ -69,5 +83,6 @@
 - **Enum `physical`:** `prisma/migrations/20260320183000_physical_stat_and_seed_events/` — chỉ `ALTER TYPE ... ADD VALUE` (tách transaction vì PostgreSQL).
 - **Chương mở (20 event đầu):** `prisma/migrations/20260320183100_seed_early_events/` — seed `events` id 1–20, `choices`, `choice_effects`, `event_tags`.
 - **Nhánh demo + pick_weight + tag karma:** `prisma/migrations/20260323140000_event_pick_weight_fork_and_karma_tags/` — cột `pick_weight`, sửa `choices.id=4` (fork), vài `pick_weight` & tag `ma_dao`/`chinh_dao`.
+- **Campaign / chapter / `events.ref`:** `prisma/migrations/20260324180000_campaign_chapters_event_ref/` — bảng `campaigns`, `chapters`; cột `events.ref`, `events.chapter_id`. Nội dung full campaign: `pnpm db:seed` (đọc `.n8n/result.json`, xóa story cũ + reset sequence).
 - Áp dụng DB: `pnpm db:migrate` (dev) hoặc `pnpm db:migrate:deploy` (CI/prod). Có thể áp DDL qua Supabase MCP `apply_migration` rồi `prisma migrate resolve --applied <tên_thư_mục>`.
 - Client: `pnpm db:generate` → import từ `@/generated/prisma/client` (singleton gợi ý: `lib/db.ts` dùng `@prisma/adapter-pg` + `DATABASE_URL`).

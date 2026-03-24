@@ -6,8 +6,20 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 export const runtime = "nodejs";
 
-/** Chương mở: bắt đầu tại event 1 (seed `20260320183100_seed_early_events`). */
-const START_EVENT_ID = 1;
+async function resolveStartEventId(): Promise<number> {
+  const campaign = await prisma.campaign.findUnique({ where: { slug: "main" } });
+  if (!campaign) {
+    throw new Error("CAMPAIGN_NOT_SEEDED");
+  }
+  const ev = await prisma.event.findFirst({
+    where: { ref: campaign.startEventRef, isActive: true },
+    select: { id: true },
+  });
+  if (!ev) {
+    throw new Error("START_EVENT_NOT_FOUND");
+  }
+  return ev.id;
+}
 
 const NAME_MIN = 1;
 const NAME_MAX = 32;
@@ -52,6 +64,7 @@ export async function POST(request: Request) {
 
     const stats = rollInitialStats();
     const seed = newRunSeed();
+    const startEventId = await resolveStartEventId();
 
     const run = await prisma.playerRun.create({
       data: {
@@ -59,11 +72,11 @@ export async function POST(request: Request) {
         playerName: name,
         stats,
         seed,
-        currentEventId: START_EVENT_ID,
+        currentEventId: startEventId,
       },
     });
 
-    const event = await getEventForApi(START_EVENT_ID);
+    const event = await getEventForApi(startEventId);
 
     return NextResponse.json({
       run_id: run.id,
