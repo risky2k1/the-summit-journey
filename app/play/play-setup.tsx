@@ -8,6 +8,8 @@ type StartResponse = {
   player_name: string;
   stats: { tu_vi: number; karma: number; luck: number; physical: number };
   event?: unknown;
+  /** Nhận xét từ OpenRouter (có thể null nếu chưa cấu hình key hoặc lỗi gọi AI). */
+  character_commentary?: string | null;
 };
 
 export function PlaySetup() {
@@ -54,6 +56,7 @@ export function PlaySetup() {
         run_id: data.run_id,
         player_name: data.player_name,
         stats: data.stats,
+        character_commentary: data.character_commentary ?? null,
       });
     } catch (err) {
       const msg = err instanceof Error ? err.message : "Lỗi không xác định";
@@ -118,6 +121,17 @@ export function PlaySetup() {
               </div>
             </dl>
           </div>
+
+          {result.character_commentary ? (
+            <blockquote className="mt-6 rounded-lg border border-amber-900/20 bg-white/50 px-4 py-3 dark:border-amber-200/10 dark:bg-zinc-950/35">
+              <p className="text-center text-sm leading-relaxed text-zinc-800 dark:text-zinc-200">
+                {result.character_commentary}
+              </p>
+              <footer className="mt-2 text-center text-[10px] uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
+                Lời thiên cơ
+              </footer>
+            </blockquote>
+          ) : null}
 
           <p className="mt-8 text-center text-sm font-medium text-zinc-800 dark:text-zinc-200">
             Hành trình bắt đầu

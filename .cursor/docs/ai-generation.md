@@ -63,3 +63,7 @@ Dự án dùng **OpenRouter** làm backend gọi model (API tương thích OpenA
 ### Đổi model
 
 - Ưu tiên đổi `OPEN_ROUTER_DEFAULT_MODEL` hoặc tham số server; cập nhật memo nếu model mặc định thay đổi lâu dài.
+
+### Nhận xét nhân vật mới
+
+- Sau `POST /api/run/start` (đã lưu run), server gọi OpenRouter qua `lib/ai/character-commentary.ts` + `lib/ai/openrouter.ts`; response có `character_commentary` hoặc `null` nếu thiếu env / lỗi gọi model.
