@@ -66,4 +66,4 @@ Dự án dùng **OpenRouter** làm backend gọi model (API tương thích OpenA
 
 ### Nhận xét nhân vật mới
 
-- Sau `POST /api/run/start` (đã lưu run), server gọi OpenRouter qua `lib/ai/character-commentary.ts` + `lib/ai/openrouter.ts`; response có `character_commentary` hoặc `null` nếu thiếu env / lỗi gọi model.
+- Client gọi `POST /api/run/:runId/character-commentary` sau khi tạo run — route gọi OpenRouter (`lib/ai/character-commentary.ts` + `lib/ai/openrouter.ts`), trả `character_commentary` hoặc `null`; nội dung có thì lưu cache cột `player_runs.character_commentary` (tránh timeout chung với `POST /api/run/start`).
