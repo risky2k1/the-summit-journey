@@ -63,6 +63,7 @@ model Event {
   pickWeight  Int       @default(1) @map("pick_weight")
   chapterId   Int?      @map("chapter_id")
   chapter     Chapter?  @relation(fields: [chapterId], references: [id], onDelete: SetNull)
+  ttsAudioUrl String?   @map("tts_audio_url") @db.Text
 
   choicesFromHere Choice[]     @relation("EventChoices")
   choicesPointingHere Choice[] @relation("NextEvent")
