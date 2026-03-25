@@ -285,7 +285,7 @@ export function PlayRun({ runId }: { runId: string }) {
         className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_80%_50%_at_50%_-20%,rgba(120,100,80,0.14),transparent)] dark:bg-[radial-gradient(ellipse_80%_50%_at_50%_-20%,rgba(180,160,120,0.1),transparent)]"
       />
       <div
-        className={`relative z-10 w-full ${finished ? "max-w-2xl" : "max-w-lg"}`}
+        className={`relative z-10 w-full ${finished ? "max-w-2xl" : "max-w-lg md:max-w-2xl"}`}
       >
         <p className="text-center text-xs uppercase tracking-[0.2em] text-zinc-500 dark:text-zinc-400">
           {run.player_name} · Run #{run.run_id}

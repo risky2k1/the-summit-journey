@@ -7,7 +7,7 @@ export default function Home() {
         aria-hidden
         className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_80%_50%_at_50%_-20%,rgba(120,100,80,0.18),transparent)] dark:bg-[radial-gradient(ellipse_80%_50%_at_50%_-20%,rgba(180,160,120,0.12),transparent)]"
       />
-      <main className="relative z-10 flex w-full max-w-lg flex-col items-center text-center">
+      <main className="relative z-10 flex w-full max-w-lg md:max-w-2xl flex-col items-center text-center">
         <p className="mb-3 text-xs font-medium uppercase tracking-[0.35em] text-zinc-500 dark:text-zinc-400">
           Tu tiên · Text
         </p>
