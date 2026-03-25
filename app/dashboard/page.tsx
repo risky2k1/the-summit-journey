@@ -38,7 +38,7 @@ export default async function DashboardPage() {
         aria-hidden
         className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_80%_50%_at_50%_-20%,rgba(120,100,80,0.12),transparent)] dark:bg-[radial-gradient(ellipse_80%_50%_at_50%_-20%,rgba(180,160,120,0.08),transparent)]"
       />
-      <div className="relative z-10 mx-auto w-full max-w-lg">
+      <div className="relative z-10 mx-auto w-full max-w-lg md:max-w-2xl">
         <header className="flex flex-col gap-2 border-b border-zinc-200 pb-6 dark:border-zinc-800 sm:flex-row sm:items-start sm:justify-between">
           <div>
             <h1 className="font-serif text-2xl font-semibold text-zinc-900 dark:text-zinc-50">
