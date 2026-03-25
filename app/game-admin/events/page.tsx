@@ -1,6 +1,6 @@
-import Link from "next/link";
-import { prisma } from "@/lib/db";
 import { createEvent } from "@/app/game-admin/actions";
+import { prisma } from "@/lib/db";
+import { EventTreeClient, type EventTreeNode } from "./event-tree-client";
 
 export default async function GameAdminEventsPage() {
   const events = await prisma.event.findMany({
@@ -11,15 +11,61 @@ export default async function GameAdminEventsPage() {
       title: true,
       type: true,
       isActive: true,
+      choicesFromHere: {
+        orderBy: { id: "asc" },
+        select: {
+          id: true,
+          content: true,
+          nextEventId: true,
+        },
+      },
     },
   });
+
+  const incomingCount = new Map<number, number>();
+  for (const event of events) {
+    incomingCount.set(event.id, 0);
+  }
+
+  for (const event of events) {
+    for (const choice of event.choicesFromHere) {
+      if (choice.nextEventId != null && incomingCount.has(choice.nextEventId)) {
+        incomingCount.set(choice.nextEventId, (incomingCount.get(choice.nextEventId) ?? 0) + 1);
+      }
+    }
+  }
+
+  const rootIds = events
+    .filter((event) => (incomingCount.get(event.id) ?? 0) === 0)
+    .map((event) => event.id);
+
+  const eventTree =
+    events.length === 0
+      ? []
+      : (events.map((event) => ({
+          id: event.id,
+          title: event.title,
+          type: event.type,
+          isActive: event.isActive,
+          choicesFromHere: event.choicesFromHere.map((choice) => ({
+            id: choice.id,
+            content: choice.content,
+            nextEventId: choice.nextEventId,
+          })),
+        })) satisfies EventTreeNode[]);
+
+  const totalChoices = events.reduce((sum, event) => sum + event.choicesFromHere.length, 0);
 
   return (
     <div className="space-y-8">
       <div className="flex flex-wrap items-center justify-between gap-4">
-        <h2 className="font-serif text-xl font-semibold text-zinc-900 dark:text-zinc-50">
-          Danh sách events
-        </h2>
+        <div className="space-y-1">
+          <h2 className="font-serif text-xl font-semibold text-zinc-900 dark:text-zinc-50">Cây nhánh events</h2>
+          <p className="text-sm text-zinc-600 dark:text-zinc-400">
+            Hiển thị theo sơ đồ node-edge: root ở trên cùng, dây nối xuống các nhánh dưới. Có thể pan và zoom để xem graph lớn.
+          </p>
+        </div>
+
         <form action={createEvent}>
           <button
             type="submit"
@@ -35,57 +81,11 @@ export default async function GameAdminEventsPage() {
           Chưa có event. Bấm &quot;Tạo event mới&quot; để bắt đầu.
         </p>
       ) : (
-        <div className="overflow-x-auto rounded-xl border border-zinc-200 bg-white/80 dark:border-zinc-700 dark:bg-zinc-950/50">
-          <table className="w-full min-w-[32rem] text-left text-sm">
-            <thead>
-              <tr className="border-b border-zinc-200 bg-zinc-50/80 dark:border-zinc-700 dark:bg-zinc-900/50">
-                <th className="px-4 py-3 font-medium text-zinc-700 dark:text-zinc-300">
-                  ID
-                </th>
-                <th className="px-4 py-3 font-medium text-zinc-700 dark:text-zinc-300">
-                  Tiêu đề
-                </th>
-                <th className="px-4 py-3 font-medium text-zinc-700 dark:text-zinc-300">
-                  Type
-                </th>
-                <th className="px-4 py-3 font-medium text-zinc-700 dark:text-zinc-300">
-                  Active
-                </th>
-                <th className="px-4 py-3 font-medium text-zinc-700 dark:text-zinc-300">
-                  Sửa
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {events.map((e) => (
-                <tr
-                  key={e.id}
-                  className="border-b border-zinc-100 last:border-0 dark:border-zinc-800"
-                >
-                  <td className="px-4 py-2.5 font-mono tabular-nums text-zinc-500">
-                    {e.id}
-                  </td>
-                  <td className="max-w-[14rem] truncate px-4 py-2.5 text-zinc-900 dark:text-zinc-100">
-                    {e.title}
-                  </td>
-                  <td className="px-4 py-2.5 text-zinc-600 dark:text-zinc-400">
-                    {e.type}
-                  </td>
-                  <td className="px-4 py-2.5 text-zinc-600 dark:text-zinc-400">
-                    {e.isActive ? "Có" : "Không"}
-                  </td>
-                  <td className="px-4 py-2.5">
-                    <Link
-                      href={`/game-admin/events/${e.id}`}
-                      className="text-amber-900 underline-offset-2 hover:underline dark:text-amber-200/90"
-                    >
-                      Mở
-                    </Link>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+        <div className="space-y-4 rounded-xl border border-zinc-200 bg-white/80 p-4 dark:border-zinc-700 dark:bg-zinc-950/50">
+          <p className="text-xs text-zinc-500 dark:text-zinc-400">
+            Hiển thị {events.length} event, {totalChoices} choices. Root nodes: {rootIds.length || 1}.
+          </p>
+          <EventTreeClient events={eventTree} rootIds={rootIds} />
         </div>
       )}
     </div>
