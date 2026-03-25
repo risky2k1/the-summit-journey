@@ -9,6 +9,18 @@ type FptTtsResponse = {
 const FPT_TTS_TIMEOUT_MS = 120_000;
 const FPT_TTS_RETRY_MS = 3_000;
 
+const audioCache = new Map<string, { url: string; updatedAt: number }>();
+const CACHE_TTL_MS = 1000 * 60 * 60 * 24;
+
+function buildCacheKey(text: string, voice: string) {
+  return `${voice}:${text}`;
+}
+
+async function isAudioReady(url: string) {
+  const probe = await fetch(url, { method: "HEAD", cache: "no-store" });
+  return probe.ok;
+}
+
 export async function POST(request: Request) {
   const body = (await request.json().catch(() => null)) as { text?: string; voice?: string } | null;
   const text = body?.text?.trim();
@@ -28,6 +40,15 @@ export async function POST(request: Request) {
   }
 
   const voice = body?.voice?.trim() || "banmai";
+  const cacheKey = buildCacheKey(text, voice);
+  const cached = audioCache.get(cacheKey);
+
+  if (cached && Date.now() - cached.updatedAt < CACHE_TTL_MS) {
+    if (await isAudioReady(cached.url)) {
+      return NextResponse.json({ audioUrl: cached.url, cached: true });
+    }
+    audioCache.delete(cacheKey);
+  }
 
   try {
     const ttsResponse = await fetch(url, {
@@ -51,9 +72,10 @@ export async function POST(request: Request) {
 
     const startedAt = Date.now();
     while (Date.now() - startedAt < FPT_TTS_TIMEOUT_MS) {
-      const probe = await fetch(result.async, { method: "HEAD", cache: "no-store" });
-      if (probe.ok) {
-        return NextResponse.json({ audioUrl: result.async });
+      const ready = await isAudioReady(result.async);
+      if (ready) {
+        audioCache.set(cacheKey, { url: result.async, updatedAt: Date.now() });
+        return NextResponse.json({ audioUrl: result.async, cached: false });
       }
       await new Promise((resolve) => setTimeout(resolve, FPT_TTS_RETRY_MS));
     }

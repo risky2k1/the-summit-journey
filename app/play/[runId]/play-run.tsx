@@ -59,6 +59,7 @@ export function PlayRun({ runId }: { runId: string }) {
   const [choiceFeedback, setChoiceFeedback] = useState<ChoiceFeedback | null>(null);
   const [ttsState, setTtsState] = useState<TtsState>("idle");
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const audioCacheRef = useRef<Map<string, string>>(new Map());
 
   const clearPulseLater = useCallback(() => {
     const t = setTimeout(() => setStatPulse({}), 5200);
@@ -135,17 +136,24 @@ export function PlayRun({ runId }: { runId: string }) {
 
     try {
       const text = `${run.event.title}. ${run.event.description}`.trim();
-      const res = await fetch("/api/tts", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text }),
-      });
-      const payload = (await res.json()) as { audioUrl?: string; error?: string };
-      if (!res.ok || !payload.audioUrl) {
-        throw new Error(payload.error ?? "Không tạo được audio.");
+      const cacheKey = text;
+      let audioUrl = audioCacheRef.current.get(cacheKey);
+
+      if (!audioUrl) {
+        const res = await fetch("/api/tts", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ text }),
+        });
+        const payload = (await res.json()) as { audioUrl?: string; error?: string };
+        if (!res.ok || !payload.audioUrl) {
+          throw new Error(payload.error ?? "Không tạo được audio.");
+        }
+        audioUrl = payload.audioUrl;
+        audioCacheRef.current.set(cacheKey, audioUrl);
       }
 
-      const audio = new Audio(payload.audioUrl);
+      const audio = new Audio(audioUrl);
       audioRef.current?.pause();
       audioRef.current = audio;
       audio.onended = () => setTtsState("idle");
