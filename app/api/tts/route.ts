@@ -48,6 +48,10 @@ function getS3Config() {
 }
 
 function buildUploadedUrl(endpoint: string, bucket: string, key: string) {
+  const publicBase = process.env.NEXT_PUBLIC_SUPABASE_URL?.replace(/\/$/, "");
+  if (publicBase) {
+    return `${publicBase}/storage/v1/object/public/${bucket}/${key}`;
+  }
   return `${endpoint.replace(/\/$/, "")}/${bucket}/${key}`;
 }
 
