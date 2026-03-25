@@ -60,6 +60,7 @@ export function PlayRun({ runId }: { runId: string }) {
   const [ttsState, setTtsState] = useState<TtsState>("idle");
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const audioCacheRef = useRef<Map<string, string>>(new Map());
+  const lastAutoPlayEventIdRef = useRef<number | null>(null);
 
   const clearPulseLater = useCallback(() => {
     const t = setTimeout(() => setStatPulse({}), 5200);
@@ -121,15 +122,8 @@ export function PlayRun({ runId }: { runId: string }) {
     };
   }, []);
 
-  const playEventAudio = useCallback(async () => {
+  const startEventAudio = useCallback(async (opts?: { autoplay?: boolean }) => {
     if (!run?.event) return;
-
-    if (ttsState === "playing") {
-      audioRef.current?.pause();
-      audioRef.current = null;
-      setTtsState("idle");
-      return;
-    }
 
     setError(null);
     setTtsState("loading");
@@ -161,9 +155,35 @@ export function PlayRun({ runId }: { runId: string }) {
       setTtsState("playing");
     } catch (e) {
       setTtsState("idle");
+      if (
+        opts?.autoplay &&
+        e instanceof DOMException &&
+        e.name === "NotAllowedError"
+      ) {
+        return;
+      }
       setError(e instanceof Error ? e.message : "Không phát được audio.");
     }
-  }, [run?.event, ttsState]);
+  }, [run?.event]);
+
+  const playEventAudio = useCallback(async () => {
+    if (ttsState === "playing") {
+      audioRef.current?.pause();
+      audioRef.current = null;
+      setTtsState("idle");
+      return;
+    }
+    await startEventAudio();
+  }, [startEventAudio, ttsState]);
+
+  useEffect(() => {
+    const eventId = run?.event?.id;
+    if (!eventId || ttsState === "loading" || ttsState === "playing") return;
+    if (lastAutoPlayEventIdRef.current === eventId) return;
+
+    lastAutoPlayEventIdRef.current = eventId;
+    void startEventAudio({ autoplay: true });
+  }, [run?.event?.id, startEventAudio, ttsState]);
 
   const branchNote = useMemo(() => {
     if (!run?.event) return null;
