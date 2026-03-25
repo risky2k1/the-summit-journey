@@ -5,7 +5,7 @@ import type { PlayerStats } from "@/lib/game/player-stats";
 import { formatConditionLine } from "@/lib/game/stat-copy";
 import { passConditions } from "@/lib/game/stats-helpers";
 import Link from "next/link";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { describeBranching, describeChoiceDestination } from "./branch-copy";
 import { formatEffectsLine, PlayerStatPanel } from "./player-stat-panel";
 import { RunJourneyTimeline } from "./run-journey-timeline";
@@ -48,6 +48,8 @@ type ChoiceFeedback = {
   ended: boolean;
 };
 
+type TtsState = "idle" | "loading" | "playing";
+
 export function PlayRun({ runId }: { runId: string }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -55,6 +57,8 @@ export function PlayRun({ runId }: { runId: string }) {
   const [choosingId, setChoosingId] = useState<number | null>(null);
   const [statPulse, setStatPulse] = useState<Partial<Record<keyof PlayerStats, number>>>({});
   const [choiceFeedback, setChoiceFeedback] = useState<ChoiceFeedback | null>(null);
+  const [ttsState, setTtsState] = useState<TtsState>("idle");
+  const audioRef = useRef<HTMLAudioElement | null>(null);
 
   const clearPulseLater = useCallback(() => {
     const t = setTimeout(() => setStatPulse({}), 5200);
@@ -107,6 +111,51 @@ export function PlayRun({ runId }: { runId: string }) {
   useEffect(() => {
     void fetchRun();
   }, [fetchRun]);
+
+  useEffect(() => {
+    const audio = audioRef.current;
+    return () => {
+      audio?.pause();
+      audioRef.current = null;
+    };
+  }, []);
+
+  const playEventAudio = useCallback(async () => {
+    if (!run?.event) return;
+
+    if (ttsState === "playing") {
+      audioRef.current?.pause();
+      audioRef.current = null;
+      setTtsState("idle");
+      return;
+    }
+
+    setError(null);
+    setTtsState("loading");
+
+    try {
+      const text = `${run.event.title}. ${run.event.description}`.trim();
+      const res = await fetch("/api/tts", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text }),
+      });
+      const payload = (await res.json()) as { audioUrl?: string; error?: string };
+      if (!res.ok || !payload.audioUrl) {
+        throw new Error(payload.error ?? "Không tạo được audio.");
+      }
+
+      const audio = new Audio(payload.audioUrl);
+      audioRef.current?.pause();
+      audioRef.current = audio;
+      audio.onended = () => setTtsState("idle");
+      await audio.play();
+      setTtsState("playing");
+    } catch (e) {
+      setTtsState("idle");
+      setError(e instanceof Error ? e.message : "Không phát được audio.");
+    }
+  }, [run?.event, ttsState]);
 
   const branchNote = useMemo(() => {
     if (!run?.event) return null;
@@ -318,9 +367,26 @@ export function PlayRun({ runId }: { runId: string }) {
                 </span>
               ))}
             </div>
-            <h2 className="mt-3 font-serif text-xl font-semibold leading-snug text-zinc-900 dark:text-zinc-50">
-              {activeEvent.title}
-            </h2>
+            <div className="mt-3 flex items-start justify-between gap-3">
+              <h2 className="font-serif text-xl font-semibold leading-snug text-zinc-900 dark:text-zinc-50">
+                {activeEvent.title}
+              </h2>
+              <button
+                type="button"
+                onClick={() => void playEventAudio()}
+                disabled={ttsState === "loading"}
+                aria-label={ttsState === "playing" ? "Dừng phát audio" : "Phát audio sự kiện"}
+                className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-amber-900/20 bg-white/85 text-amber-900 transition hover:bg-white disabled:cursor-not-allowed disabled:opacity-50 dark:border-amber-200/15 dark:bg-zinc-900 dark:text-amber-100"
+              >
+                {ttsState === "loading" ? (
+                  <span className="text-xs font-semibold">…</span>
+                ) : ttsState === "playing" ? (
+                  <span className="text-sm font-semibold">■</span>
+                ) : (
+                  <span className="pl-0.5 text-sm">▶</span>
+                )}
+              </button>
+            </div>
             <p className="mt-4 whitespace-pre-wrap text-sm leading-relaxed text-zinc-700 dark:text-zinc-300">
               {activeEvent.description}
             </p>
