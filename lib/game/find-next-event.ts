@@ -24,7 +24,11 @@ export async function findNextEventId(stats: PlayerStats): Promise<number | null
     ? await prisma.event.findMany({
         where: {
           ...baseWhere,
-          tags: { some: { tag } },
+            eventTagLinks: {
+                some: {
+                    tag: { name: tag },
+                },
+            },
         },
         select: selectIdWeight,
       })

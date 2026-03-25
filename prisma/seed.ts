@@ -177,18 +177,41 @@ async function main() {
     if (e.ref) refToId.set(e.ref, e.id);
   }
 
-  const tagRows: { eventId: number; tag: string }[] = [];
+  const tagRows: { eventId: number; tagName: string }[] = [];
   for (const ch of campaignJson.chapters) {
     for (const ev of ch.events) {
       const eventId = refToId.get(ev.id);
       if (eventId == null) throw new Error(`Missing event id for ref ${ev.id}`);
-      for (const tag of ev.tags ?? []) {
-        tagRows.push({ eventId, tag });
+      for (const tagName of ev.tags ?? []) {
+        tagRows.push({ eventId, tagName });
       }
     }
   }
+
   if (tagRows.length) {
-    await prisma.eventTag.createMany({ data: tagRows, skipDuplicates: true });
+    // 1) insert tags dictionary
+    const uniqueTagNames = [...new Set(tagRows.map((x) => x.tagName))];
+    await prisma.tag.createMany({
+      data: uniqueTagNames.map((name) => ({ name })),
+      skipDuplicates: true,
+    });
+
+    // 2) map name -> id
+    const tags = await prisma.tag.findMany({
+      where: { name: { in: uniqueTagNames } },
+      select: { id: true, name: true },
+    });
+    const tagNameToId = new Map(tags.map((t) => [t.name, t.id]));
+
+    // 3) insert links
+    await prisma.eventTagLink.createMany({
+      data: tagRows.map(({ eventId, tagName }) => {
+        const tagId = tagNameToId.get(tagName);
+        if (tagId == null) throw new Error(`Missing tag id for ${tagName}`);
+        return { eventId, tagId };
+      }),
+      skipDuplicates: true,
+    });
   }
 
   type FlatChoice = { eventId: number; payload: JsonChoice };
