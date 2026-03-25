@@ -66,7 +66,7 @@ model Event {
 
   choicesFromHere Choice[]     @relation("EventChoices")
   choicesPointingHere Choice[] @relation("NextEvent")
-  tags              EventTag[]
+  eventTagLinks              EventTagLink[]
   runsAtCurrent     PlayerRun[] @relation("CurrentEvent")
   runHistoryEvents  RunHistory[]
 
@@ -114,17 +114,6 @@ model ChoiceCondition {
   @@map("choice_conditions")
 }
 
-model EventTag {
-  id      Int    @id @default(autoincrement())
-  eventId Int    @map("event_id")
-  tag     String @db.Text
-
-  event Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
-
-  @@unique([eventId, tag])
-  @@map("event_tags")
-}
-
 model PlayerRun {
   id             Int     @id @default(autoincrement())
   /// Supabase Auth `auth.users.id`
@@ -155,4 +144,27 @@ model RunHistory {
 
   @@index([runId])
   @@map("run_history")
+}
+
+model Tag {
+  id            Int            @id @default(autoincrement())
+  name          String         @unique @db.Text
+  createdAt     DateTime       @default(now()) @map("created_at")
+  eventTagLinks EventTagLink[]
+
+  @@map("tags")
+}
+
+model EventTagLink {
+  id      Int   @id @default(autoincrement())
+  eventId Int   @map("event_id")
+  tagId   Int   @map("tag_id")
+
+  event Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  tag   Tag   @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@unique([eventId, tagId])
+  @@index([eventId])
+  @@index([tagId])
+  @@map("event_tag_links")
 }

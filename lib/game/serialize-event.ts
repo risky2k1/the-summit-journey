@@ -24,7 +24,10 @@ const eventInclude = {
     orderBy: { id: "asc" as const },
     include: { effects: true, conditions: true },
   },
-  tags: { orderBy: { id: "asc" as const } },
+  eventTagLinks: {
+    orderBy: { id: "asc" as const },
+    include: { tag: true },
+  },
 } as const;
 
 export async function getEventForApi(eventId: number): Promise<ApiEventPayload | null> {
@@ -48,14 +51,14 @@ export function toApiEventPayload(row: {
     effects: { stat: string; value: number }[];
     conditions: { stat: string; operator: string; value: number }[];
   }[];
-  tags: { tag: string }[];
+  eventTagLinks: { tag: { name: string } }[];
 }): ApiEventPayload {
   return {
     id: row.id,
     title: row.title,
     description: row.description,
     type: row.type,
-    tags: row.tags.map((t) => t.tag),
+    tags: row.eventTagLinks.map((x) => x.tag.name),
     choices: row.choicesFromHere.map((c) => ({
       id: c.id,
       content: c.content,
